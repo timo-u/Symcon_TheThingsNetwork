@@ -1,0 +1,13 @@
+{
+    "elements":
+    [
+		{ "type": "PasswordTextBox", "name": "Authorization", "caption": "Authorization" },
+        { "type": "ValidationTextBox", "name": "HookName", "caption": "HookName" }   
+    ],
+    "actions":
+    [
+	],
+    "status":
+    [
+    ]
+}

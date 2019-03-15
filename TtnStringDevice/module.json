@@ -1,0 +1,14 @@
+{
+	"id": "{7E23BBD4-5DDA-4142-ADA1-EC688D29D273}",
+	"name": "TtnStringDevice",
+	"type": 3,
+	"vendor": "universal",
+	"aliases": 
+	[
+		"TTN String Device"
+	],
+	"parentRequirements": ["{345C55AB-5EAF-4A69-8B24-93B97629CD09}"],
+	"childRequirements": [],
+	"implemented": ["{474DDD47-79C2-4B83-AE33-79326BF07B2B}"],
+	"prefix": "TTN"
+}
