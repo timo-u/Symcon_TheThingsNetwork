@@ -1,5 +1,6 @@
 <?php
 
+declare(strict_types=1);
 
     class TtnStringDevice extends IPSModule
     {
@@ -10,13 +11,11 @@
 
             $this->RegisterPropertyString('ApplicationId', 'ApplicationId');
             $this->RegisterPropertyString('DeviceId', 'DeviceId');
-			
-			$this->RegisterPropertyBoolean('UseHex', false);
-			
+
+            $this->RegisterPropertyBoolean('UseHex', false);
+
             $this->ConnectParent('{A6D53032-A228-458C-B023-8C3B1117B73B}');
-			$this->RegisterVariableString('Payload', $this->Translate('Payload'), '', 1);	
-						
-			
+            $this->RegisterVariableString('Payload', $this->Translate('Payload'), '', 1);
         }
 
         public function ApplyChanges()
@@ -27,21 +26,24 @@
 
         public function ReceiveData($JSONString)
         {
-			$data = json_decode($JSONString);
-			$data = $data->Buffer;
-			
-			if($data->app_id != $this->ReadPropertyString('ApplicationId')) return;
-			if($data->dev_id != $this->ReadPropertyString('DeviceId')) return;
-			
-			$this->SendDebug('ReceiveData()', "Application_ID & Device_ID OK", 0);
-			
+            $data = json_decode($JSONString);
+            $data = $data->Buffer;
+
+            if ($data->app_id != $this->ReadPropertyString('ApplicationId')) {
+                return;
+            }
+            if ($data->dev_id != $this->ReadPropertyString('DeviceId')) {
+                return;
+            }
+
+            $this->SendDebug('ReceiveData()', 'Application_ID & Device_ID OK', 0);
+
             $payload = base64_decode($data->payload_raw);
-	
-			if ($this->ReadPropertyBoolean('UseHex')) 
-			{
-				$payload = bin2hex($payload);
-			}
-			$this->SetValue('Payload', $payload);
-			$this->SendDebug('ReceiveData()', "Payload: ".$payload , 0);
-		}
+
+            if ($this->ReadPropertyBoolean('UseHex')) {
+                $payload = bin2hex($payload);
+            }
+            $this->SetValue('Payload', $payload);
+            $this->SendDebug('ReceiveData()', 'Payload: ' . $payload, 0);
+        }
     }
