@@ -22,7 +22,7 @@ Der Payload der eingehenden Nachricht wird in die Variable "Payload" geschrieben
 ## TTN JSON Device
 Durch Eingabe der Application-ID und der Device-ID wird sichergestellt, dass nur Nachrichten empfangen werden, die für das Gerät bestimmt sind. 
 
-Eingehende Nachrichten im JSON-Format werden decodiert und in Variablen umgewandelt. Hierbei wird nur die erste Ebende des JSON unterstützt.
+Eingehende Nachrichten im JSON-Format werden decodiert und in Variablen umgewandelt. Hierbei wird nur die erste Ebene des JSON unterstützt.
 Unterstützte Formate sind hierbei String, Boolean, Integer und Double (bzw. Float).
 
 Durch das Feld "Auto Create Variables" werden die nötigen Variablen automatisch erstellt
