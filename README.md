@@ -1,8 +1,8 @@
 # Symcon_TheThingsNetwork
 [![StyleCI Status](https://styleci.io/repos/175640288/shield)](https://styleci.io/repos/175640288)
 
-Das Modul verbindet das The Things Network mit IP-Symcon. Hierfür wird die HTTP-Integration genutzt. 
-Erstellt und getestet wurde das Modul mit der HTTP Integration(v2.6.0).
+Das Modul verbindet das The Things Network (https://www.thethingsnetwork.org/) mit IP-Symcon (https://www.symcon.de). Hierfür wird die HTTP-Integration genutzt. 
+Erstellt und getestet wurde das Modul mit der HTTP Integration (v2.6.0).
 
 
 ## TTN HTTP Integration Gateway
