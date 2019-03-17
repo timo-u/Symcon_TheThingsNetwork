@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-    class TtnStringDevice extends IPSModule
+    class TtnDevice extends IPSModule
     {
         public function Create()
         {
@@ -12,25 +12,43 @@ declare(strict_types=1);
             $this->RegisterPropertyString('ApplicationId', 'ApplicationId');
             $this->RegisterPropertyString('DeviceId', 'DeviceId');
 
-            $this->RegisterPropertyBoolean('UseHex', false);
+            $this->RegisterPropertyInteger('DataType', 0);
 
             $this->ConnectParent('{A6D53032-A228-458C-B023-8C3B1117B73B}');
-            $this->RegisterVariableString('Payload', $this->Translate('Payload'), '', 1);
 			
 			$this->RegisterPropertyBoolean('ShowMeta', false);
 			$this->RegisterPropertyBoolean('ShowRssi', false);
 			$this->RegisterPropertyBoolean('ShowGatewayCount', false);
-			$this->SetStatus(201);
+			
         }
 
         public function ApplyChanges()
         {
             //Never delete this line!
             parent::ApplyChanges();
+			
+			$this->Maintain();
+			
         }
 
+		private function Maintain()
+		{
+			$this->MaintainVariable('Meta_Informations', 'Meta Informations', 3, "", 100, $this->ReadPropertyBoolean('ShowMeta'));
+			$this->MaintainVariable('Meta_RSSI', 'RSSI', 1, "", 101, $this->ReadPropertyBoolean('ShowRssi'));
+			$this->MaintainVariable('Meta_GatewayCount', 'Gateway Count', 1, "", 102, $this->ReadPropertyBoolean('ShowGatewayCount'));
+			
+			$type = $this->ReadPropertyInteger('DataType');
+			$this->MaintainVariable('Payload_Boolean', 'Payload', 0, "", 1, $type==2);
+			$this->MaintainVariable('Payload_Integer', 'Payload', 1, "", 1, $type==3);
+			$this->MaintainVariable('Payload_Float', 'Payload', 2, "", 1, $type==4);
+			$this->MaintainVariable('Payload_String', 'Payload', 3, "", 1, $type<=1);
+				
+		}
+		
         public function ReceiveData($JSONString)
         {
+			$this->Maintain();
+			
             $data = json_decode($JSONString);
             $data = $data->Buffer;
 
@@ -45,14 +63,7 @@ declare(strict_types=1);
 
             $payload = base64_decode($data->payload_raw);
 
-            if ($this->ReadPropertyBoolean('UseHex')) {
-                $payload = bin2hex($payload);
-            }
-			
-			$this->MaintainVariable('Meta_Informations', 'Meta Informations', 3, "", 100, $this->ReadPropertyBoolean('ShowMeta'));
-			$this->MaintainVariable('Meta_RSSI', 'RSSI', 1, "", 101, $this->ReadPropertyBoolean('ShowRssi'));
-			$this->MaintainVariable('Meta_GatewayCount', 'Gateway Count', 1, "", 102, $this->ReadPropertyBoolean('ShowGatewayCount'));
-			
+            
 			$metadata = $data->metadata;	
 			$gateways = $metadata->gateways;
 			
@@ -72,9 +83,20 @@ declare(strict_types=1);
 			if($this->ReadPropertyBoolean('ShowGatewayCount'))
 			
 				$this->SetValue('Meta_GatewayCount', count($gateways));
+
+			$type = $this->ReadPropertyInteger('DataType');
 			
+			if ($type==1)
+                $payload = bin2hex($payload);
 			
-            $this->SetValue('Payload', $payload);
+			if ($type<=1)
+				$this->SetValue('Payload_String', $payload);
+			if ($type==2)
+				$this->SetValue('Payload_Boolean', $payload);
+			if ($type==3)
+				$this->SetValue('Payload_Integer', $payload);
+			if ($type==4)
+				$this->SetValue('Payload_Float', $payload);
 			
             $this->SendDebug('ReceiveData()', 'Payload: ' . $payload, 0);
         }

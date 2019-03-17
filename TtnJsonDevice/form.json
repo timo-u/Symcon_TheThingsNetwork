@@ -3,7 +3,10 @@
     [
         { "type": "ValidationTextBox", "name": "ApplicationId", "caption": "Application ID" },
 		{ "type": "ValidationTextBox", "name": "DeviceId", "caption": "Device ID" },
-		{ "type": "CheckBox", "name": "AutoCreateVariable", "caption": "Auto Create Variables" }
+		{ "type": "CheckBox", "name": "AutoCreateVariable", "caption": "Auto Create Variables" },
+		{ "type": "CheckBox", "name": "ShowMeta", "caption": "Show Meta Informations" },
+		{ "type": "CheckBox", "name": "ShowRssi", "caption": "Show RSSI" },
+		{ "type": "CheckBox", "name": "ShowGatewayCount", "caption": "Show Gateway Count" }
     ],
     "actions":
     [

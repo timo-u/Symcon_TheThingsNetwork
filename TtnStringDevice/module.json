@@ -2,10 +2,10 @@
 	"id": "{7E23BBD4-5DDA-4142-ADA1-EC688D29D273}",
 	"name": "TtnStringDevice",
 	"type": 3,
-	"vendor": "universal",
+	"vendor": "The Things Network",
 	"aliases": 
 	[
-		"TTN String Device"
+		"TTN String Device (Obsolete)"
 	],
 	"parentRequirements": ["{345C55AB-5EAF-4A69-8B24-93B97629CD09}"],
 	"childRequirements": [],
