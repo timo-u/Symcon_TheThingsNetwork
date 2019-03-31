@@ -1,0 +1,17 @@
+{
+	"translations": {
+		"de": {
+			"Application ID" : "Anwendungs ID",
+			"Device ID" : "Geräte ID",
+			"Show Meta Informations" : "Zeige Metainformationen",
+			"Show RSSI" : "Zeige RSSI",
+			"Show Gateway Count" : "Zeige Anzahl der Gateways",
+			"Type" : "Datentyp",
+			"Payload" : "Daten",
+			"Meta Informations" : "Metadaten",
+			"RSSI" : "RSSI",
+			"Gateway Count" : "Gateway Anzahl",
+			"Auto Create Variables" : "Variablen automatisch erstellen"
+		}
+	}
+}

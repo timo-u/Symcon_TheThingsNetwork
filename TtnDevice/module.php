@@ -31,15 +31,15 @@ declare(strict_types=1);
 
         private function Maintain()
         {
-            $this->MaintainVariable('Meta_Informations', 'Meta Informations', 3, '', 100, $this->ReadPropertyBoolean('ShowMeta'));
-            $this->MaintainVariable('Meta_RSSI', 'RSSI', 1, '', 101, $this->ReadPropertyBoolean('ShowRssi'));
-            $this->MaintainVariable('Meta_GatewayCount', 'Gateway Count', 1, '', 102, $this->ReadPropertyBoolean('ShowGatewayCount'));
+            $this->MaintainVariable('Meta_Informations', $this->Translate('Meta Informations'), 3, '', 100, $this->ReadPropertyBoolean('ShowMeta'));
+            $this->MaintainVariable('Meta_RSSI', $this->Translate('RSSI'), 1, '', 101, $this->ReadPropertyBoolean('ShowRssi'));
+            $this->MaintainVariable('Meta_GatewayCount', $this->Translate('Gateway Count'), 1, '', 102, $this->ReadPropertyBoolean('ShowGatewayCount'));
 
             $type = $this->ReadPropertyInteger('DataType');
-            $this->MaintainVariable('Payload_Boolean', 'Payload', 0, '', 1, $type == 2);
-            $this->MaintainVariable('Payload_Integer', 'Payload', 1, '', 1, $type == 3);
-            $this->MaintainVariable('Payload_Float', 'Payload', 2, '', 1, $type == 4);
-            $this->MaintainVariable('Payload_String', 'Payload', 3, '', 1, $type <= 1);
+            $this->MaintainVariable('Payload_Boolean', $this->Translate('Payload'), 0, '', 1, $type == 2);
+            $this->MaintainVariable('Payload_Integer', $this->Translate('Payload'), 1, '', 1, $type == 3);
+            $this->MaintainVariable('Payload_Float', $this->Translate('Payload'), 2, '', 1, $type == 4);
+            $this->MaintainVariable('Payload_String', $this->Translate('Payload'), 3, '', 1, $type <= 1);
         }
 
         public function ReceiveData($JSONString)

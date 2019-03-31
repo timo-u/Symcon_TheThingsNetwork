@@ -71,9 +71,11 @@ class TtnJsonDevice extends IPSModule
             }
         }
 
-        $this->MaintainVariable('Meta_Informations', 'Meta Informations', 3, '', 100, $this->ReadPropertyBoolean('ShowMeta'));
-        $this->MaintainVariable('Meta_RSSI', 'RSSI', 1, '', 101, $this->ReadPropertyBoolean('ShowRssi'));
-        $this->MaintainVariable('Meta_GatewayCount', 'Gateway Count', 1, '', 102, $this->ReadPropertyBoolean('ShowGatewayCount'));
+   
+		$this->MaintainVariable('Meta_Informations', $this->Translate('Meta Informations'), 3, '', 100, $this->ReadPropertyBoolean('ShowMeta'));
+        $this->MaintainVariable('Meta_RSSI', $this->Translate('RSSI'), 1, '', 101, $this->ReadPropertyBoolean('ShowRssi'));
+        $this->MaintainVariable('Meta_GatewayCount', $this->Translate('Gateway Count'), 1, '', 102, $this->ReadPropertyBoolean('ShowGatewayCount'));
+
 
         $metadata = $data->metadata;
         $gateways = $metadata->gateways;
