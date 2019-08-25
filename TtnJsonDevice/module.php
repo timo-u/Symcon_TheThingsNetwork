@@ -10,7 +10,7 @@ class TtnJsonDevice extends IPSModule
 
         $this->RegisterPropertyString('ApplicationId', 'ApplicationId');
         $this->RegisterPropertyString('DeviceId', 'DeviceId');
-
+		$this->RegisterPropertyBoolean('GetContentFromRawPayload', false);
         $this->RegisterPropertyBoolean('AutoCreateVariable', false);
 
         $this->ConnectParent('{A6D53032-A228-458C-B023-8C3B1117B73B}');
@@ -39,9 +39,15 @@ class TtnJsonDevice extends IPSModule
         }
 
         $this->SendDebug('ReceiveData()', 'Application_ID & Device_ID OK', 0);
-
-        $payload = base64_decode($data->payload_raw);
-        $elements = json_decode($payload);
+		if($this->ReadPropertyBoolean('GetContentFromRawPayload'))
+		{	
+			$payload = base64_decode($data->payload_raw);
+			$elements = json_decode($payload);
+		}
+		else
+		{
+			$elements = $data->payload_fields;
+		}
 
         if ($elements == null) {
             $this->SendDebug('ReceiveData()', 'JSON-Decode failed', 0);

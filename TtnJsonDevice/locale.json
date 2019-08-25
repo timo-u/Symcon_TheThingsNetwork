@@ -11,7 +11,8 @@
 			"Meta Informations" : "Metadaten",
 			"RSSI" : "RSSI",
 			"Gateway Count" : "Gateway Anzahl",
-			"Auto Create Variables" : "Variablen automatisch erstellen"
+			"Auto Create Variables" : "Variablen automatisch erstellen",
+			"Get Content From Raw-Payload" : "Inhalt aus dem RAW-Payload entnehmen"
 		}
 	}
 }
