@@ -21,10 +21,16 @@ Durch Eingabe der Application-ID und der Device-ID wird sichergestellt, dass nur
 Leigt eine Variable "Meta Informatios" an und gibt Infos zu Frequenz und Modulationsverfahren aus.
 
 #### Show RSSI
-Legt eine Variable "RSSI" aus und gibt den höchsten RSSI-Wert aus.
+Legt eine Variable "RSSI" aus und gibt den höchsten RSSI-Wert(bei mehrern Gateways) des letzten LoRa-Pakets aus.
+
+#### Show SNR
+Legt eine Variable "SNR" aus und gibt den höchsten SNR-Wert(bei mehrern Gateways) des letzten LoRa-Pakets aus.
 
 #### Show Gateway Count
 Legt eine Variable "Gateway Count" an und gibt die Anzahl der Gateways aus, die die Nachticht empfangen haben aus.
+
+#### Show Frame Counter
+Zeigt die Frame ID des letzten Lora-Pakets an 
 
 
 
@@ -37,12 +43,13 @@ Zur Auswahl hierfür steht:
 - Boolean
 - Integer
 - Float
+Die Instanz liest die Daten aus dem Feld "Payload" aus. Diese Instanz macht dann Sinn, wenn die Daten nicht bei TTN Decodiert werden sondern in Symcon.
 
-## TTN JSON Device
-Eingehende Nachrichten im JSON-Format werden decodiert und in Variablen umgewandelt. Hierbei wird nur die erste Ebene des JSON unterstützt.
+
+
+## TTN Object Device
+Diese Instanz eignet sich für Nachrichten die ein Valides JSON als Payload verweden oder wenn die Decodiereung bereits im TTN duchgeführt wird.
+Die Decodierung kann in der TTN Console in der Application unter PAYLOAD FORMATS => Decoder eingestellt werden. 
 Unterstützte Formate sind hierbei String, Boolean, Integer und Double (bzw. Float).
 
 Durch das Feld "Auto Create Variables" werden die nötigen Variablen automatisch erstellt
-
-## TTN String Device
-Die Funktion wird durch das TTN Device abgedeckt. Diese Instanz wird zukünfrig entfernt. 

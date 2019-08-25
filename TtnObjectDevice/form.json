@@ -7,6 +7,8 @@
 		{ "type": "CheckBox", "name": "GetContentFromRawPayload", "caption": "Get Content From Raw-Payload" },
 		{ "type": "CheckBox", "name": "ShowMeta", "caption": "Show Meta Informations" },
 		{ "type": "CheckBox", "name": "ShowRssi", "caption": "Show RSSI" },
+		{ "type": "CheckBox", "name": "ShowSnr", "caption": "Show SNR" },
+		{ "type": "CheckBox", "name": "ShowFrame", "caption": "Show Frame Count" },
 		{ "type": "CheckBox", "name": "ShowGatewayCount", "caption": "Show Gateway Count" }
     ],
     "actions":
