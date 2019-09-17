@@ -1,0 +1,110 @@
+{
+  "elements": [
+    {
+      "type": "ValidationTextBox",
+      "name": "GatewayId",
+      "caption": "GatewayId ID"
+    },
+    {
+      "type": "Select",
+      "name": "UpdateInterval",
+      "caption": "Update Interval",
+      "options": [
+        {
+          "label": "60 seconds",
+          "value": 60
+        },
+        {
+          "label": "2 minutes",
+          "value": 120
+        },
+        {
+          "label": "5 minutes",
+          "value": 300
+        },
+        {
+          "label": "10 minutes",
+          "value": 600
+        },
+        {
+          "label": "15 minutes",
+          "value": 900
+        },
+        {
+          "label": "30 minutes",
+          "value": 1800
+        },
+        {
+          "label": "1 hour",
+          "value": 3600
+        }
+      ]
+    },
+    {
+      "type": "Select",
+      "name": "ConnectionWarningInterval",
+      "caption": "Connection Warning",
+      "options": [
+        {
+          "label": "5 minutes",
+          "value": 300
+        },
+        {
+          "label": "10 minutes",
+          "value": 600
+        },
+        {
+          "label": "15 minutes",
+          "value": 900
+        },
+        {
+          "label": "30 minutes",
+          "value": 1800
+        },
+        {
+          "label": "1 hour",
+          "value": 3600
+        },
+        {
+          "label": "2 hours",
+          "value": 7200
+        },
+        {
+          "label": "4 hours",
+          "value": 14400
+        },
+        {
+          "label": "6 hours",
+          "value": 21600
+        },
+        {
+          "label": "8 hours",
+          "value": 28800
+        },
+        {
+          "label": "12 hours",
+          "value": 43200
+        },
+        {
+          "label": "24 hours",
+          "value": 86400
+        }
+      ]
+    },
+    {
+      "type": "CheckBox",
+      "name": "Logging",
+      "caption": "Logging"
+    }
+  ],
+    "actions":
+    [
+      {
+        "type": "Button",
+        "label": "Updatre",
+        "onClick": "TTN_Update($id);"
+      }    ],
+    "status":
+    [
+	]
+}

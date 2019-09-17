@@ -1,3 +1,3 @@
-### TTN String device
+### TTN Device
 
-Nimmt den Payload der Nachticht als String entgegen.
+Nimmt den Payload der Nachticht entgegen.

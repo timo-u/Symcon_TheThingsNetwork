@@ -1,0 +1,13 @@
+{
+	"translations": {
+    "de": {
+      "Gateway ID": "Gateway ID",
+      "uplink messages": "Empfangene Nachrichten",
+      "downlink messages": "Gesendete Nachrichten",
+      "last seen bevore": "Verbunden vor",
+      "online": "Online",
+      "Update Interval": "Aktualisierungs-Intervall",
+      "Connection Warning": "Verbindungswarnung"
+    }
+	}
+}
