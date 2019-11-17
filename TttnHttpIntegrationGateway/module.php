@@ -8,7 +8,7 @@ declare(strict_types=1);
             //Never delete this line!
             parent::Create();
 
-            $this->RegisterPropertyString('Authorization', '');
+            $this->RegisterPropertyString('Authorization', $this->generateRandomString());
             $this->RegisterPropertyString('HookName', 'ttn');
         }
 
@@ -43,6 +43,22 @@ declare(strict_types=1);
                 IPS_ApplyChanges($ids[0]);
             }
         }
+		
+		public function generateRandomString() 
+		{
+			$characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+			$charactersLength = strlen($characters);
+			$randomString = '';
+			for ($i = 0; $i < 30; $i++) {
+			if($i%5 == 0&& $i!=0)
+			{
+				$randomString .= "-";
+			}
+			$randomString .= $characters[rand(0, $charactersLength - 1)];
+			}
+			return $randomString;
+		}
+		
 
         protected function ProcessHookData()
         {
