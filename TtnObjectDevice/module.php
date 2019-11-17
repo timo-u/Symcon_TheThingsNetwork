@@ -26,18 +26,17 @@ class TtnObjectDevice extends IPSModule
     {
         //Never delete this line!
         parent::ApplyChanges();
-		$this->Maintain();
+        $this->Maintain();
     }
-	
-	private function Maintain()
+
+    private function Maintain()
     {
-		$this->MaintainVariable('Meta_Informations', $this->Translate('Meta Informations'), 3, '', 100, $this->ReadPropertyBoolean('ShowMeta'));
+        $this->MaintainVariable('Meta_Informations', $this->Translate('Meta Informations'), 3, '', 100, $this->ReadPropertyBoolean('ShowMeta'));
         $this->MaintainVariable('Meta_RSSI', $this->Translate('RSSI'), 1, '', 101, $this->ReadPropertyBoolean('ShowRssi'));
         $this->MaintainVariable('Meta_SNR', $this->Translate('SNR'), 1, '', 102, $this->ReadPropertyBoolean('ShowSnr'));
         $this->MaintainVariable('Meta_FrameId', $this->Translate('Frame ID'), 1, '', 103, $this->ReadPropertyBoolean('ShowFrame'));
         $this->MaintainVariable('Meta_GatewayCount', $this->Translate('Gateway Count'), 1, '', 104, $this->ReadPropertyBoolean('ShowGatewayCount'));
-
-	}
+    }
 
     public function ReceiveData($JSONString)
     {
@@ -89,45 +88,40 @@ class TtnObjectDevice extends IPSModule
         }
 
         $this->Maintain();
-		
+
         $metadata = $data->metadata;
-		
+
         $rssi = -200;
         $snr = -200;
-		$gatewayCount = 0;
-		
-		if (array_key_exists('gateways', $metadata))
-		{
-		$gateways = $metadata->gateways;
-        foreach ($gateways as $gateway) {
-            if ($snr < $gateway->snr) {
-                $snr = $gateway->snr;
+        $gatewayCount = 0;
+
+        if (array_key_exists('gateways', $metadata)) {
+            $gateways = $metadata->gateways;
+            foreach ($gateways as $gateway) {
+                if ($snr < $gateway->snr) {
+                    $snr = $gateway->snr;
+                }
+                if ($rssi < $gateway->rssi) {
+                    $rssi = $gateway->rssi;
+                }
             }
-            if ($rssi < $gateway->rssi) {
-                $rssi = $gateway->rssi;
-            }
+            $gatewayCount = count($gateways);
         }
-			$gatewayCount = count($gateways);
-		}
         $this->SendDebug('ReceiveData()', 'Best RSSI: ' . $rssi, 0);
         $this->SendDebug('ReceiveData()', 'Best SNR: ' . $snr, 0);
         $this->SendDebug('ReceiveData()', 'Frame Counter : ' . $data->counter, 0);
 
-         if ($this->ReadPropertyBoolean('ShowMeta')) {
-				if (array_key_exists('frequency', $metadata))
-				{	
-				
-                $this->SetValue('Meta_Informations', 'Freq: ' . $metadata->frequency . 
-				' Modulation: ' . $metadata->modulation . 
-				' Data Rate: ' . $metadata->data_rate . 
-				' Coding Rate: ' . $metadata->coding_rate);
-				}
-				else
-				{
-					 $this->SetValue('Meta_Informations', 'no data');
-				}
-		}
-			
+        if ($this->ReadPropertyBoolean('ShowMeta')) {
+            if (array_key_exists('frequency', $metadata)) {
+                $this->SetValue('Meta_Informations', 'Freq: ' . $metadata->frequency .
+                ' Modulation: ' . $metadata->modulation .
+                ' Data Rate: ' . $metadata->data_rate .
+                ' Coding Rate: ' . $metadata->coding_rate);
+            } else {
+                $this->SetValue('Meta_Informations', 'no data');
+            }
+        }
+
         if ($this->ReadPropertyBoolean('ShowRssi')) {
             $this->SetValue('Meta_RSSI', $rssi);
         }
