@@ -1,5 +1,6 @@
 <?php
 
+declare(strict_types=1);
 
 class TtnGateway extends IPSModule
 {
@@ -12,7 +13,6 @@ class TtnGateway extends IPSModule
         $this->RegisterPropertyInteger('UpdateInterval', 120);
         $this->RegisterPropertyInteger('ConnectionWarningInterval', 900);
         $this->RegisterTimer('Update', $this->ReadPropertyInteger('UpdateInterval') * 1000, 'TTN_Update($_IPS[\'TARGET\']);');
-        
 
         $this->RegisterVariableInteger('uplink', $this->Translate('uplink messages'), '', 1);
         $this->RegisterVariableInteger('downlink', $this->Translate('downlink messages'), '', 2);
@@ -23,52 +23,51 @@ class TtnGateway extends IPSModule
     public function ApplyChanges()
     {
         $this->SetTimerInterval('Update', $this->ReadPropertyInteger('UpdateInterval') * 1000);
-        
+
         parent::ApplyChanges(); //Never delete this line!
     }
-	
-	public function EnableLogging()
-	{
-		$archiveId = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
 
-            AC_SetLoggingStatus($archiveId, $this->GetIDForIdent('online'), true);
-            AC_SetAggregationType($archiveId, $this->GetIDForIdent('online'), 0); // 0 Standard, 1 Zähler
-            AC_SetGraphStatus($archiveId, $this->GetIDForIdent('online'), true);
+    public function EnableLogging()
+    {
+        $archiveId = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
 
-            AC_SetLoggingStatus($archiveId, $this->GetIDForIdent('uplink'), true);
-            AC_SetAggregationType($archiveId, $this->GetIDForIdent('uplink'), 0); // 0 Standard, 1 Zähler
-            AC_SetGraphStatus($archiveId, $this->GetIDForIdent('uplink'), true);
+        AC_SetLoggingStatus($archiveId, $this->GetIDForIdent('online'), true);
+        AC_SetAggregationType($archiveId, $this->GetIDForIdent('online'), 0); // 0 Standard, 1 Zähler
+        AC_SetGraphStatus($archiveId, $this->GetIDForIdent('online'), true);
 
-            AC_SetLoggingStatus($archiveId, $this->GetIDForIdent('downlink'), true);
-            AC_SetAggregationType($archiveId, $this->GetIDForIdent('downlink'), 0); // 0 Standard, 1 Zähler
-            AC_SetGraphStatus($archiveId, $this->GetIDForIdent('downlink'), true);
+        AC_SetLoggingStatus($archiveId, $this->GetIDForIdent('uplink'), true);
+        AC_SetAggregationType($archiveId, $this->GetIDForIdent('uplink'), 0); // 0 Standard, 1 Zähler
+        AC_SetGraphStatus($archiveId, $this->GetIDForIdent('uplink'), true);
 
-            AC_SetLoggingStatus($archiveId, $this->GetIDForIdent('lastseenbevore'), true);
-            AC_SetAggregationType($archiveId, $this->GetIDForIdent('lastseenbevore'), 0); // 0 Standard, 1 Zähler
-            AC_SetGraphStatus($archiveId, $this->GetIDForIdent('lastseenbevore'), true);
+        AC_SetLoggingStatus($archiveId, $this->GetIDForIdent('downlink'), true);
+        AC_SetAggregationType($archiveId, $this->GetIDForIdent('downlink'), 0); // 0 Standard, 1 Zähler
+        AC_SetGraphStatus($archiveId, $this->GetIDForIdent('downlink'), true);
 
-            IPS_ApplyChanges($archiveId);
-	}
-	
-		public function DisableLogging()
-	{
-		 $archiveId = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
+        AC_SetLoggingStatus($archiveId, $this->GetIDForIdent('lastseenbevore'), true);
+        AC_SetAggregationType($archiveId, $this->GetIDForIdent('lastseenbevore'), 0); // 0 Standard, 1 Zähler
+        AC_SetGraphStatus($archiveId, $this->GetIDForIdent('lastseenbevore'), true);
 
-            AC_SetLoggingStatus($archiveId, $this->GetIDForIdent('online'), false);
-            AC_SetGraphStatus($archiveId, $this->GetIDForIdent('online'), false);
+        IPS_ApplyChanges($archiveId);
+    }
 
-            AC_SetLoggingStatus($archiveId, $this->GetIDForIdent('uplink'), false);
-            AC_SetGraphStatus($archiveId, $this->GetIDForIdent('uplink'), false);
+    public function DisableLogging()
+    {
+        $archiveId = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
 
-            AC_SetLoggingStatus($archiveId, $this->GetIDForIdent('downlink'), false);
-            AC_SetGraphStatus($archiveId, $this->GetIDForIdent('downlink'), false);
+        AC_SetLoggingStatus($archiveId, $this->GetIDForIdent('online'), false);
+        AC_SetGraphStatus($archiveId, $this->GetIDForIdent('online'), false);
 
-            AC_SetLoggingStatus($archiveId, $this->GetIDForIdent('lastseenbevore'), false);
-            AC_SetGraphStatus($archiveId, $this->GetIDForIdent('lastseenbevore'), false);
+        AC_SetLoggingStatus($archiveId, $this->GetIDForIdent('uplink'), false);
+        AC_SetGraphStatus($archiveId, $this->GetIDForIdent('uplink'), false);
 
-            IPS_ApplyChanges($archiveId);
-	}
-	
+        AC_SetLoggingStatus($archiveId, $this->GetIDForIdent('downlink'), false);
+        AC_SetGraphStatus($archiveId, $this->GetIDForIdent('downlink'), false);
+
+        AC_SetLoggingStatus($archiveId, $this->GetIDForIdent('lastseenbevore'), false);
+        AC_SetGraphStatus($archiveId, $this->GetIDForIdent('lastseenbevore'), false);
+
+        IPS_ApplyChanges($archiveId);
+    }
 
     public function Update()
     {
