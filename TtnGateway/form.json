@@ -90,20 +90,25 @@
           "value": 86400
         }
       ]
-    },
-    {
-      "type": "CheckBox",
-      "name": "Logging",
-      "caption": "Logging"
     }
   ],
     "actions":
     [
       {
         "type": "Button",
-        "label": "Updatre",
+        "label": "Update",
         "onClick": "TTN_Update($id);"
-      }    ],
+      } ,
+	  {
+        "type": "Button",
+        "label": "Enable Logging",
+        "onClick": "TTN_EnableLogging($id);"
+      } ,
+	  {
+        "type": "Button",
+        "label": "Disable Logging",
+        "onClick": "TTN_DisableLogging($id);"
+      } 	  ],
     "status":
     [
 	]

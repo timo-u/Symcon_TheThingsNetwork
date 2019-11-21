@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+
 class TtnGateway extends IPSModule
 {
     public function Create()
@@ -12,7 +12,7 @@ class TtnGateway extends IPSModule
         $this->RegisterPropertyInteger('UpdateInterval', 120);
         $this->RegisterPropertyInteger('ConnectionWarningInterval', 900);
         $this->RegisterTimer('Update', $this->ReadPropertyInteger('UpdateInterval') * 1000, 'TTN_Update($_IPS[\'TARGET\']);');
-        $this->RegisterPropertyBoolean('Logging', false);
+        
 
         $this->RegisterVariableInteger('uplink', $this->Translate('uplink messages'), '', 1);
         $this->RegisterVariableInteger('downlink', $this->Translate('downlink messages'), '', 2);
@@ -23,10 +23,13 @@ class TtnGateway extends IPSModule
     public function ApplyChanges()
     {
         $this->SetTimerInterval('Update', $this->ReadPropertyInteger('UpdateInterval') * 1000);
-        //Never delete this line!
-        parent::ApplyChanges();
-        if ($this->ReadPropertyBoolean('Logging')) {
-            $archiveId = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
+        
+        parent::ApplyChanges(); //Never delete this line!
+    }
+	
+	public function EnableLogging()
+	{
+		$archiveId = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
 
             AC_SetLoggingStatus($archiveId, $this->GetIDForIdent('online'), true);
             AC_SetAggregationType($archiveId, $this->GetIDForIdent('online'), 0); // 0 Standard, 1 Zähler
@@ -45,8 +48,11 @@ class TtnGateway extends IPSModule
             AC_SetGraphStatus($archiveId, $this->GetIDForIdent('lastseenbevore'), true);
 
             IPS_ApplyChanges($archiveId);
-        } else {
-            $archiveId = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
+	}
+	
+		public function DisableLogging()
+	{
+		 $archiveId = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
 
             AC_SetLoggingStatus($archiveId, $this->GetIDForIdent('online'), false);
             AC_SetGraphStatus($archiveId, $this->GetIDForIdent('online'), false);
@@ -61,8 +67,8 @@ class TtnGateway extends IPSModule
             AC_SetGraphStatus($archiveId, $this->GetIDForIdent('lastseenbevore'), false);
 
             IPS_ApplyChanges($archiveId);
-        }
-    }
+	}
+	
 
     public function Update()
     {
