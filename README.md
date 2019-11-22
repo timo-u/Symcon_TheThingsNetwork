@@ -21,7 +21,7 @@ Der Name kann im Konfigurationsformular unter "Hook Name" angepasst werden.
 Um den Webhook vor fremden Zugriff zu schützen wird ein Autorisierungstoken erstellt. Der Token wird beim erstellen der Instanz generiert und kann so direkt verwendet werden. 
 Der hier eingetragene Wert muss natürlich mit dem Wert in der HTTP Integration übereinstimmen. (Weitere Infos in der Einrichtung) 
 
-![Instanz erstellen](img/Symcon_TTN_HttpIntegrationGateway.png?raw=true "Instanz erstellen")
+![Instanz erstellen](imgs/Symcon_TTN_HttpIntegrationGateway.png?raw=true "Instanz erstellen")
 
 ### WebHook Registriern 
 Der Button "WebHook Registriern" legt selbstständig einen Webhook (Standard: /hook/ttn) an, der Instanz mit dem WebHook Control verbindet. Wenn ein WebHook mit gleichem Namen existiert wird dieser überschrieben!
@@ -93,7 +93,7 @@ Nun ist das HTTP-Gateway betriebsbereit.
 Mit dem Button "Open TTN Console" öffnet sich die Console direkt im Browser. 
 Nun navigiert man zu der Application, die hier verwendet werden soll (Die Einrichtung muss für jede Application erfolgen!).
 Alternativ kann eine eigene Application erstellt werden: 
-![Application erstellen](img/Symcon_TTN_Create_Application.png?raw=true "Application erstellen")
+![Application erstellen](imgs/Symcon_TTN_Create_Application.png?raw=true "Application erstellen")
 
 In der Application kann man unter "Integrations"  und "Add Integration" eine "HTTP Integration" hinzufügen. 
 * Process ID:
@@ -118,7 +118,7 @@ Wird nicht verwendet.
 * Custom Header Value
 Wird nicht verwendet.
 
-![HTTP Integration erstellen](img/Symcon_TTN_Create_Webhook.png?raw=true "HTTP Integration erstellen")
+![HTTP Integration erstellen](imgs/Symcon_TTN_Create_Webhook.png?raw=true "HTTP Integration erstellen")
 
 ## Einrichtung der Geräte in Symcon
 Bei der Auswahl der Geräte kommt es natürlich darauf an, welche Geräte mit dem TTN verwebunden werden. 
@@ -132,9 +132,9 @@ Die Geräte-ID / Device-ID wird aus der TTN-Console in das Symcon Device kopiert
 
 In Symcon wird "HEX-String" als Datentyp ausgewählt. 
 
-![Instanz erstellen](img/Symcon_TTN_Device_in_TTN_console.png?raw=true "Instanz erstellen")
+![Instanz erstellen](imgs/Symcon_TTN_Device_in_TTN_console.png?raw=true "Instanz erstellen")
 
-![Geräte-Instanz erstellen](img/Symcon_TTN_Create_TTN_Device.png?raw=true "Geräte-Instanz erstellen")
+![Geräte-Instanz erstellen](imgs/Symcon_TTN_Create_TTN_Device.png?raw=true "Geräte-Instanz erstellen")
 
 
 Nun ist das Gerät mit Symcon verbunden. 
@@ -142,10 +142,10 @@ Nun ist das Gerät mit Symcon verbunden.
 ## Test der Verbindung 
 
 In der TTN-Console kann kann unter dem Device mit "SIMULATE UPLINK" eine Übertragung simuliert werden. Hierfür müssen die Daten hier im HEX-Format eingegeben werden. z.B. "AA BB CC"  
-![Simulate Uplink](img/Symcon_TTN_Simulate_Uplink.png?raw=true "Simulate Uplink")
+![Simulate Uplink](imgs/Symcon_TTN_Simulate_Uplink.png?raw=true "Simulate Uplink")
 
 Nach dem Senden werden die Daten in der Symcon-Console beim TTN-Device angezeigt. 
-![Incomming_Data](img/Symcon_TTN_Incomming_Data.png?raw=true "Incomming_Data")
+![Incomming_Data](imgs/Symcon_TTN_Incomming_Data.png?raw=true "Incomming_Data")
 
 
 
