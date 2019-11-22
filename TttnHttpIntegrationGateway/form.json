@@ -6,6 +6,28 @@
     ],
     "actions":
     [
+		{
+			"type": "Button",
+			"label": "Register WebHook",
+			"onClick": "TTN_RegisterHook($id);"
+		},
+		{
+			"type": "Button",
+			"label": "Get WebHook URL",
+			"onClick": "TTN_GetUrl($id);"
+		},
+		{
+			"type": "Button",
+			"label": "Open Webhook",
+			"onClick": "TTN_OpenWebhook($id);"
+		}
+		,
+		{
+			"type": "Button",
+			"label": "Open TTN-Console",
+			"onClick": "echo 'https://console.thethingsnetwork.org/applications'; " 
+		}
+	
 	],
     "status":
     [

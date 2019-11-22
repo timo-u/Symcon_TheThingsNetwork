@@ -17,12 +17,13 @@ declare(strict_types=1);
             //Never delete this line!
             parent::ApplyChanges();
 
-            $this->RegisterHook('/hook/' . $this->ReadPropertyString('HookName'));
             $this->SendDebug('ApplyChanges()', 'OK', 0);
+			
         }
 
-        private function RegisterHook($WebHook)
+        public function RegisterHook()
         {
+			$WebHook = '/hook/' . $this->ReadPropertyString('HookName');
             $ids = IPS_GetInstanceListByModuleID('{015A6EB8-D6E5-4B93-B496-0D3F77AE9FE1}');
             if (count($ids) > 0) {
                 $hooks = json_decode(IPS_GetProperty($ids[0], 'Hooks'), true);
@@ -38,11 +39,44 @@ declare(strict_types=1);
                 }
                 if (!$found) {
                     $hooks[] = ['Hook' => $WebHook, 'TargetID' => $this->InstanceID];
+					$this->SendDebug('RegisterHook()', 'Hook: ' . $WebHook . ' mit TargetID: ' . $this->InstanceID  . ' angelegt', 0);
                 }
                 IPS_SetProperty($ids[0], 'Hooks', json_encode($hooks));
                 IPS_ApplyChanges($ids[0]);
             }
+			else
+			{
+				$this->SendDebug('RegisterHook()', 'Keine WebHook-Instanz verfügbar');
+			}
         }
+		public function GetUrl()
+		{
+			$ids = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}');
+			$WebHook = '/hook/' . $this->ReadPropertyString('HookName');
+            if (count($ids) > 0) 
+			{
+				$url = CC_GetConnectURL($ids[0]);
+				if($url!="")
+					echo ($this->Translate("The Connect-Service WebHook-URL is: ") . $url . $WebHook ) ;
+				else	
+					echo ($this->Translate("The WebHook-URL is: ") . $url . $WebHook ) ;
+			}
+		
+		}
+		public function OpenWebHook()
+		{
+			$ids = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}');
+			$WebHook = '/hook/' . $this->ReadPropertyString('HookName');
+            if (count($ids) > 0) 
+			{
+				$url = CC_GetConnectURL($ids[0]);
+				if($url!="")
+					echo ($url . $WebHook ) ;
+				else	
+					echo ($this->Translate("Connect-Service not active.")) ;
+			}
+		
+		}
 
         public function generateRandomString()
         {
@@ -78,8 +112,16 @@ declare(strict_types=1);
                 $this->SendDebug('ProcessHookData()', "JSON Decode Failed. ($data== null)", 0);
                 return;
             }
+			
+			try
+			{
+				$this->SendDataToChildren(json_encode(['DataID' => '{474DDD47-79C2-4B83-AE33-79326BF07B2B}', 'Buffer' => $data]));
+			}
+			catch (Exception $e)
+			{
+				$this->SendDebug('ProcessHookData()', 'Exception: '. $e, 0);
+			}
 
-            $this->SendDataToChildren(json_encode(['DataID' => '{474DDD47-79C2-4B83-AE33-79326BF07B2B}', 'Buffer' => $data]));
 
             http_response_code(200);
         }

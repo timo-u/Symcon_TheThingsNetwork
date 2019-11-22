@@ -2,7 +2,13 @@
 	"translations": {
 		"de": {
 			"HookName" : "HookName",
-			"Authorization" : "Autorisierung"
+			"Authorization" : "Autorisierung",
+			"Register WebHook" : "WebHook Registrieren",
+			"Get WebHook URL" : "WebHook-URL abrufen",
+			"The Connect-Service WebHook-URL is: " : "Die Connect-Dienst WebHook-URL lautet: ",
+			"The WebHook-URL is: " : "Die WebHook-URL lautet: ",
+			"Connect-Service not active." : "Der Connect-Dienst ist nicht aktiv",
+			"Open Webhook" : "WebHook öffnen"
 		}
 	}
 }
