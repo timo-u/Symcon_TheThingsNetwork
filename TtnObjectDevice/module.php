@@ -38,10 +38,10 @@ class TtnObjectDevice extends IPSModule
         $this->MaintainVariable('Meta_GatewayCount', $this->Translate('Gateway Count'), 1, '', 104, $this->ReadPropertyBoolean('ShowGatewayCount'));
     }
 
-	public function GetData()
-	{
-		return json_decode($this->GetBuffer("DataBuffer")) ;
-	}
+    public function GetData()
+    {
+        return json_decode($this->GetBuffer('DataBuffer'));
+    }
 
     public function ReceiveData($JSONString)
     {
@@ -54,7 +54,7 @@ class TtnObjectDevice extends IPSModule
         if ($data->dev_id != $this->ReadPropertyString('DeviceId')) {
             return;
         }
-		$this->SetBuffer("DataBuffer", json_encode($data));
+        $this->SetBuffer('DataBuffer', json_encode($data));
 
         $this->SendDebug('ReceiveData()', 'Application_ID & Device_ID OK', 0);
         if ($this->ReadPropertyBoolean('GetContentFromRawPayload')) {
