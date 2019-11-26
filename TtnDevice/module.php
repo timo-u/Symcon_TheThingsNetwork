@@ -28,7 +28,12 @@ declare(strict_types=1);
 
             $this->Maintain();
         }
-
+		
+		public function GetData()
+		{
+			return json_decode($this->GetBuffer("DataBuffer")) ;
+		}
+		
         private function Maintain()
         {
             $this->MaintainVariable('Meta_Informations', $this->Translate('Meta Informations'), 3, '', 100, $this->ReadPropertyBoolean('ShowMeta'));
@@ -55,7 +60,8 @@ declare(strict_types=1);
             if ($data->dev_id != $this->ReadPropertyString('DeviceId')) {
                 return;
             }
-
+			
+			$this->SetBuffer("DataBuffer", json_encode($data));
             $this->SendDebug('ReceiveData()', 'Application_ID & Device_ID OK', 0);
 
             $payload = base64_decode($data->payload_raw);

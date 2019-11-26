@@ -76,8 +76,17 @@ class TtnGateway extends IPSModule
             return;
         }
         $url = 'http://noc.thethingsnetwork.org:8085/api/v2/gateways/' . $eui;
-        $content = file_get_contents($url);
-        $data = json_decode((string) $content);
+        try
+		{
+			$content = file_get_contents($url);
+        }
+		catch (Exception $e)
+		{
+			$this->SendDebug('Update() Exception: ', $e, 0);
+			return;
+		}
+		
+		$data = json_decode((string) $content);
 
         if ($data == null) {
             $this->SendDebug('Update()', '$data==null', 0);
