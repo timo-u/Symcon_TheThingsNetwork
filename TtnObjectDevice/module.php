@@ -42,8 +42,8 @@ class TtnObjectDevice extends IPSModule
     private function Maintain()
     {
         $this->MaintainVariable('Meta_Informations', $this->Translate('Meta Informations'), 3, '', 100, $this->ReadPropertyBoolean('ShowMeta'));
-        $this->MaintainVariable('Meta_RSSI', $this->Translate('RSSI'), 1, '', 101, $this->ReadPropertyBoolean('ShowRssi'));
-        $this->MaintainVariable('Meta_SNR', $this->Translate('SNR'), 1, '', 102, $this->ReadPropertyBoolean('ShowSnr'));
+        $this->MaintainVariable('Meta_RSSI', $this->Translate('RSSI'), 1, 'TTN_dBm', 101, $this->ReadPropertyBoolean('ShowRssi'));
+        $this->MaintainVariable('Meta_SNR', $this->Translate('SNR'), 2, 'TTN_dB', 102, $this->ReadPropertyBoolean('ShowSnr'));
         $this->MaintainVariable('Meta_FrameId', $this->Translate('Frame ID'), 1, '', 103, $this->ReadPropertyBoolean('ShowFrame'));
         $this->MaintainVariable('Meta_GatewayCount', $this->Translate('Gateway Count'), 1, '', 104, $this->ReadPropertyBoolean('ShowGatewayCount'));
 		$this->MaintainVariable('State', $this->Translate('State'), 0, 'TTN_Online', 105, $this->ReadPropertyBoolean('ShowState'));
@@ -182,6 +182,20 @@ class TtnObjectDevice extends IPSModule
                 IPS_CreateVariableProfile('TTN_Online', 0);
                 IPS_SetVariableProfileAssociation('TTN_Online', 0, $this->Translate('Offline'), '', 0xFF0000);
 				IPS_SetVariableProfileAssociation('TTN_Online', 1, $this->Translate('Online'), '', 0x00FF00);
+            }
+			if (!IPS_VariableProfileExists('TTN_dBm')) {
+                IPS_CreateVariableProfile('TTN_dBm', 1);
+				IPS_SetVariableProfileText("TTN_dBm", "", " dBm");
+				IPS_SetVariableProfileValues("TTN_dBm", -150, 0, 1);
+            }
+			
+			if (!IPS_VariableProfileExists('TTN_dB')) {
+                IPS_CreateVariableProfile('TTN_dB', 2);
+				IPS_SetVariableProfileDigits("TTN_dB", 1);
+				IPS_SetVariableProfileText("TTN_dB", "", " dB");
+				IPS_SetVariableProfileValues("TTN_dB", -25, 15, 0.1);
+				
+				
             }
         }
 	
