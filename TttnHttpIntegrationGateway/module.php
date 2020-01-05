@@ -22,7 +22,7 @@ declare(strict_types=1);
 
         public function RegisterHook()
         {
-            $WebHook = '/hook/' . $this->ReadPropertyString('HookName');
+            $WebHook = '/hook/'.$this->ReadPropertyString('HookName');
             $ids = IPS_GetInstanceListByModuleID('{015A6EB8-D6E5-4B93-B496-0D3F77AE9FE1}');
             if (count($ids) > 0) {
                 $hooks = json_decode(IPS_GetProperty($ids[0], 'Hooks'), true);
@@ -38,7 +38,7 @@ declare(strict_types=1);
                 }
                 if (!$found) {
                     $hooks[] = ['Hook' => $WebHook, 'TargetID' => $this->InstanceID];
-                    $this->SendDebug('RegisterHook()', 'Hook: ' . $WebHook . ' mit TargetID: ' . $this->InstanceID . ' angelegt', 0);
+                    $this->SendDebug('RegisterHook()', 'Hook: '.$WebHook.' mit TargetID: '.$this->InstanceID.' angelegt', 0);
                 }
                 IPS_SetProperty($ids[0], 'Hooks', json_encode($hooks));
                 IPS_ApplyChanges($ids[0]);
@@ -50,13 +50,13 @@ declare(strict_types=1);
         public function GetUrl()
         {
             $ids = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}');
-            $WebHook = '/hook/' . $this->ReadPropertyString('HookName');
+            $WebHook = '/hook/'.$this->ReadPropertyString('HookName');
             if (count($ids) > 0) {
                 $url = CC_GetConnectURL($ids[0]);
                 if ($url != '') {
-                    echo $this->Translate('The Connect-Service WebHook-URL is: ') . $url . $WebHook;
+                    echo $this->Translate('The Connect-Service WebHook-URL is: ').$url.$WebHook;
                 } else {
-                    echo $this->Translate('The WebHook-URL is: ') . $url . $WebHook;
+                    echo $this->Translate('The WebHook-URL is: ').$url.$WebHook;
                 }
             }
         }
@@ -64,11 +64,11 @@ declare(strict_types=1);
         public function OpenWebHook()
         {
             $ids = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}');
-            $WebHook = '/hook/' . $this->ReadPropertyString('HookName');
+            $WebHook = '/hook/'.$this->ReadPropertyString('HookName');
             if (count($ids) > 0) {
                 $url = CC_GetConnectURL($ids[0]);
                 if ($url != '') {
-                    echo $url . $WebHook;
+                    echo $url.$WebHook;
                 } else {
                     echo $this->Translate('Connect-Service not active.');
                 }
@@ -86,6 +86,7 @@ declare(strict_types=1);
                 }
                 $randomString .= $characters[rand(0, $charactersLength - 1)];
             }
+
             return $randomString;
         }
 
@@ -95,6 +96,7 @@ declare(strict_types=1);
                 http_response_code(401);
                 echo 'Unauthorized';
                 $this->SendDebug('ProcessHookData()', 'Response: 401 Unauthorized', 0);
+
                 return;
             }
 
@@ -107,13 +109,14 @@ declare(strict_types=1);
                 http_response_code(400);
                 $this->SendDebug('ProcessHookData()', 'Response: 400 Bad Request', 0);
                 $this->SendDebug('ProcessHookData()', "JSON Decode Failed. ($data== null)", 0);
+
                 return;
             }
 
             try {
                 $this->SendDataToChildren(json_encode(['DataID' => '{474DDD47-79C2-4B83-AE33-79326BF07B2B}', 'Buffer' => $data]));
             } catch (Exception $e) {
-                $this->SendDebug('ProcessHookData()', 'Exception: ' . $e, 0);
+                $this->SendDebug('ProcessHookData()', 'Exception: '.$e, 0);
             }
 
             http_response_code(200);
