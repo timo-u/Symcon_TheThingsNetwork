@@ -13,6 +13,8 @@ class TtnObjectDevice extends IPSModule
         $this->RegisterPropertyBoolean('GetContentFromRawPayload', false);
         $this->RegisterPropertyBoolean('AutoCreateVariable', false);
 
+		$this->RegisterPropertyBoolean('ShowState', false);
+		$this->RegisterPropertyInteger('WatchdogTime', 0);
         $this->ConnectParent('{A6D53032-A228-458C-B023-8C3B1117B73B}');
 
         $this->RegisterPropertyBoolean('ShowMeta', false);
@@ -20,13 +22,21 @@ class TtnObjectDevice extends IPSModule
         $this->RegisterPropertyBoolean('ShowSnr', false);
         $this->RegisterPropertyBoolean('ShowGatewayCount', false);
         $this->RegisterPropertyBoolean('ShowFrame', false);
+		
+		$this->RegisterTimer('WatchdogTimer', $this->ReadPropertyInteger('WatchdogTime') * 60000, 'TTN_WatchdogTimerElapsed($_IPS[\'TARGET\']);');
+		$this->RegisterVariableProfiles();
+		$this->Maintain();
     }
 
     public function ApplyChanges()
     {
         //Never delete this line!
         parent::ApplyChanges();
-        $this->Maintain();
+		
+		
+		$this->Maintain();
+        $this-> WatchdogReset();
+	
     }
 
     private function Maintain()
@@ -36,7 +46,27 @@ class TtnObjectDevice extends IPSModule
         $this->MaintainVariable('Meta_SNR', $this->Translate('SNR'), 1, '', 102, $this->ReadPropertyBoolean('ShowSnr'));
         $this->MaintainVariable('Meta_FrameId', $this->Translate('Frame ID'), 1, '', 103, $this->ReadPropertyBoolean('ShowFrame'));
         $this->MaintainVariable('Meta_GatewayCount', $this->Translate('Gateway Count'), 1, '', 104, $this->ReadPropertyBoolean('ShowGatewayCount'));
-    }
+		$this->MaintainVariable('State', $this->Translate('State'), 0, 'TTN_Online', 105, $this->ReadPropertyBoolean('ShowState'));
+  
+  }
+	public function WatchdogTimerElapsed()
+	{
+		$this->SetValue('State', false);
+		$this->SetTimerInterval('WatchdogTimer', 0);
+	}
+
+	private function WatchdogReset()
+	{
+		if($this->ReadPropertyBoolean('ShowState'))
+		{
+			$this->SetTimerInterval('WatchdogTimer', $this->ReadPropertyInteger('WatchdogTime') * 60000);
+			$this->SetValue('State', true);
+		}
+		else
+		{
+			$this->SetTimerInterval('WatchdogTimer', 0);
+		}
+	}
 
     public function GetData()
     {
@@ -56,7 +86,9 @@ class TtnObjectDevice extends IPSModule
         }
         $this->SetBuffer('DataBuffer', json_encode($data));
 
-        $this->SendDebug('ReceiveData()', 'Application_ID & Device_ID OK', 0);
+		$this-> WatchdogReset();
+        
+		$this->SendDebug('ReceiveData()', 'Application_ID & Device_ID OK', 0);
         if ($this->ReadPropertyBoolean('GetContentFromRawPayload')) {
             $payload = base64_decode($data->payload_raw);
             $elements = json_decode($payload);
@@ -141,4 +173,16 @@ class TtnObjectDevice extends IPSModule
             $this->SetValue('Meta_GatewayCount', $gatewayCount);
         }
     }
+	
+	private function RegisterVariableProfiles()
+        {
+            $this->SendDebug('RegisterVariableProfiles()', 'RegisterVariableProfiles()', 0);
+            
+            if (!IPS_VariableProfileExists('TTN_Online')) {
+                IPS_CreateVariableProfile('TTN_Online', 0);
+                IPS_SetVariableProfileAssociation('TTN_Online', 0, $this->Translate('Offline'), '', 0xFF0000);
+				IPS_SetVariableProfileAssociation('TTN_Online', 1, $this->Translate('Online'), '', 0x00FF00);
+            }
+        }
+	
 }
