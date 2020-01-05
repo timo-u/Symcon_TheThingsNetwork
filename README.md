@@ -42,6 +42,11 @@ Durch drücken auf den Button wird die TTN-Console in einem neuen Tab geöffnet.
 Durch Eingabe der Application-ID und der Device-ID wird sichergestellt, dass nur Nachrichten empfangen werden, die für das Gerät bestimmt sind. 
 Die Devices verbinden sich selbstständig mit einem Gateway. Wenn kein Gateway existiert wird ein Gateway erstellt. 
 
+#### Status anzueigen
+Zeigt den Status (Onlinde/Offline) mit Hilfe eines Watchdogs. Beim Empfang einer Nachricht wird der Watchdog zurückgesetzt. Ist der Watchdog-Timer abgelaufen wird der Status als Offline angezeigt. 
+
+#### Watchdog Zeit
+Hier kann die Zeitdauer für den Watchdog in Minuten eingestellt werden. 
 
 #### Show Meta Informations
 Leigt eine Variable "Meta Informatios" an und gibt Infos zu Frequenz und Modulationsverfahren aus.
@@ -58,7 +63,8 @@ Legt eine Variable "Gateway Count" an und gibt die Anzahl der Gateways aus, die 
 #### Show Frame Counter
 Zeigt die Frame ID des letzten Lora-Pakets an 
 
-
+#### Show Intervall
+Zeigt das Sendeinterall der empfangen packete in Sekunden an. 
 
 ## TTN Device
 Der Payload der eingehenden Nachricht wird in die Variable "Payload" geschrieben. 
