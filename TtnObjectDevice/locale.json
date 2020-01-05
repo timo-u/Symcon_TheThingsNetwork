@@ -8,6 +8,8 @@
 			"Show SNR" : "Zeige SNR",
 			"Show Frame Count" : "Zeige Paket-Zähler",
 			"Show Gateway Count" : "Zeige Anzahl der Gateways",
+			"Show Interval" : "Zeige Intervall",
+			"Interval" : "Intevall",
 			"State" : "Status",
 			"minutes" : "Minuten",
 			"online" : "Online",

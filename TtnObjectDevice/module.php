@@ -22,10 +22,13 @@ class TtnObjectDevice extends IPSModule
         $this->RegisterPropertyBoolean('ShowSnr', false);
         $this->RegisterPropertyBoolean('ShowGatewayCount', false);
         $this->RegisterPropertyBoolean('ShowFrame', false);
+		$this->RegisterPropertyBoolean('ShowInterval', false);
+		
+		$this->RegisterAttributeInteger("LastMessageTimestamp", 0);
 		
 		$this->RegisterTimer('WatchdogTimer', $this->ReadPropertyInteger('WatchdogTime') * 60000, 'TTN_WatchdogTimerElapsed($_IPS[\'TARGET\']);');
 		$this->RegisterVariableProfiles();
-		$this->Maintain();
+		
     }
 
     public function ApplyChanges()
@@ -42,12 +45,13 @@ class TtnObjectDevice extends IPSModule
     private function Maintain()
     {
         $this->MaintainVariable('Meta_Informations', $this->Translate('Meta Informations'), 3, '', 100, $this->ReadPropertyBoolean('ShowMeta'));
-        $this->MaintainVariable('Meta_RSSI', $this->Translate('RSSI'), 1, 'TTN_dBm', 101, $this->ReadPropertyBoolean('ShowRssi'));
-        $this->MaintainVariable('Meta_SNR', $this->Translate('SNR'), 2, 'TTN_dB', 102, $this->ReadPropertyBoolean('ShowSnr'));
+        $this->MaintainVariable('Meta_RSSI', $this->Translate('RSSI'), 1, 'TTN_dBm_RSSI', 101, $this->ReadPropertyBoolean('ShowRssi'));
+        $this->MaintainVariable('Meta_SNR', $this->Translate('SNR'), 2, 'TTN_dB_SNR', 102, $this->ReadPropertyBoolean('ShowSnr'));
         $this->MaintainVariable('Meta_FrameId', $this->Translate('Frame ID'), 1, '', 103, $this->ReadPropertyBoolean('ShowFrame'));
         $this->MaintainVariable('Meta_GatewayCount', $this->Translate('Gateway Count'), 1, '', 104, $this->ReadPropertyBoolean('ShowGatewayCount'));
 		$this->MaintainVariable('State', $this->Translate('State'), 0, 'TTN_Online', 105, $this->ReadPropertyBoolean('ShowState'));
-  
+		$this->MaintainVariable('Interval', $this->Translate('Interval'), 1, 'TTN_second', 106, $this->ReadPropertyBoolean('ShowInterval'));
+        
   }
 	public function WatchdogTimerElapsed()
 	{
@@ -172,6 +176,17 @@ class TtnObjectDevice extends IPSModule
         if ($this->ReadPropertyBoolean('ShowGatewayCount')) {
             $this->SetValue('Meta_GatewayCount', $gatewayCount);
         }
+		
+		$currentTimestamp = time();
+		 if ($this->ReadPropertyBoolean('ShowInterval')) {
+			$lastTimestamp = $this->ReadAttributeInteger("LastMessageTimestamp") ;
+			if($lastTimestamp !=0) 
+			{
+				$this->SetValue('Interval', $currentTimestamp - $lastTimestamp);
+			}
+		}
+		$this->WriteAttributeInteger("LastMessageTimestamp", $currentTimestamp);
+		
     }
 	
 	private function RegisterVariableProfiles()
@@ -183,20 +198,28 @@ class TtnObjectDevice extends IPSModule
                 IPS_SetVariableProfileAssociation('TTN_Online', 0, $this->Translate('Offline'), '', 0xFF0000);
 				IPS_SetVariableProfileAssociation('TTN_Online', 1, $this->Translate('Online'), '', 0x00FF00);
             }
-			if (!IPS_VariableProfileExists('TTN_dBm')) {
-                IPS_CreateVariableProfile('TTN_dBm', 1);
-				IPS_SetVariableProfileText("TTN_dBm", "", " dBm");
-				IPS_SetVariableProfileValues("TTN_dBm", -150, 0, 1);
+			if (!IPS_VariableProfileExists('TTN_dBm_RSSI')) {
+                IPS_CreateVariableProfile('TTN_dBm_RSSI', 1);
+				IPS_SetVariableProfileText("TTN_dBm_RSSI", "", " dBm");
+				IPS_SetVariableProfileValues("TTN_dBm_RSSI", -150, 0, 1);
             }
 			
-			if (!IPS_VariableProfileExists('TTN_dB')) {
-                IPS_CreateVariableProfile('TTN_dB', 2);
-				IPS_SetVariableProfileDigits("TTN_dB", 1);
-				IPS_SetVariableProfileText("TTN_dB", "", " dB");
-				IPS_SetVariableProfileValues("TTN_dB", -25, 15, 0.1);
+			if (!IPS_VariableProfileExists('TTN_dB_SNR')) {
+                IPS_CreateVariableProfile('TTN_dB_SNR', 2);
+				IPS_SetVariableProfileDigits("TTN_dB_SNR", 1);
+				IPS_SetVariableProfileText("TTN_dB_SNR", "", " dB");
+				IPS_SetVariableProfileValues("TTN_dB_SNR", -25, 15, 0.1);
 				
 				
             }
+			if (!IPS_VariableProfileExists('TTN_second')) {
+                IPS_CreateVariableProfile('TTN_second', 1);
+				IPS_SetVariableProfileText("TTN_second", "", " s");
+            }
+			
+			
+			
+			
         }
 	
 }
