@@ -85,14 +85,14 @@ declare(strict_types=1);
                 }
                 $gatewayCount = count($gateways);
             }
-            $this->SendDebug('ReceiveData()', 'Best RSSI: ' . $rssi, 0);
+            $this->SendDebug('ReceiveData()', 'Best RSSI: '.$rssi, 0);
 
             if ($this->ReadPropertyBoolean('ShowMeta')) {
                 if (array_key_exists('frequency', $metadata)) {
-                    $this->SetValue('Meta_Informations', 'Freq: ' . $metadata->frequency .
-                ' Modulation: ' . $metadata->modulation .
-                ' Data Rate: ' . $metadata->data_rate .
-                ' Coding Rate: ' . $metadata->coding_rate);
+                    $this->SetValue('Meta_Informations', 'Freq: '.$metadata->frequency.
+                ' Modulation: '.$metadata->modulation.
+                ' Data Rate: '.$metadata->data_rate.
+                ' Coding Rate: '.$metadata->coding_rate);
                 } else {
                     $this->SetValue('Meta_Informations', 'no data');
                 }
@@ -123,6 +123,6 @@ declare(strict_types=1);
                 $this->SetValue('Payload_Float', $payload);
             }
 
-            $this->SendDebug('ReceiveData()', 'Payload: ' . $payload, 0);
+            $this->SendDebug('ReceiveData()', 'Payload: '.$payload, 0);
         }
     }

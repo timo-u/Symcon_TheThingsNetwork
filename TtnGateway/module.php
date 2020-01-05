@@ -75,12 +75,13 @@ class TtnGateway extends IPSModule
         if ($eui == 'eui-ffffffffffffffff') {
             return;
         }
-        $url = 'http://noc.thethingsnetwork.org:8085/api/v2/gateways/' . $eui;
+        $url = 'http://noc.thethingsnetwork.org:8085/api/v2/gateways/'.$eui;
 
         try {
             $content = file_get_contents($url);
         } catch (Exception $e) {
             $this->SendDebug('Update() Exception: ', $e, 0);
+
             return;
         }
 
@@ -88,10 +89,11 @@ class TtnGateway extends IPSModule
 
         if ($data == null) {
             $this->SendDebug('Update()', '$data==null', 0);
+
             return;
         }
 
-        $this->SendDebug('Update()', 'content: ' . $content, 0);
+        $this->SendDebug('Update()', 'content: '.$content, 0);
 
         $cutrentdate = new DateTime('now');
         $currentTimestamp = $cutrentdate->getTimestamp();
