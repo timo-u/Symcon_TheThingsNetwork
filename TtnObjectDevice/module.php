@@ -92,9 +92,16 @@ class TtnObjectDevice extends IPSModule
             $elements = json_decode($payload);
             $this->SendDebug('ReceiveData()', 'Payload: '.$payload, 0);
         } else {
-            $elements = $data->payload_fields;
-            $this->SendDebug('ReceiveData()', 'Payload: '.json_encode($elements), 0);
-        }
+			if(array_key_exists('payload_fields', $data))
+			{	
+				$elements = $data->payload_fields;
+				$this->SendDebug('ReceiveData()', 'Payload: '.json_encode($elements), 0);
+			}
+			else
+			{	$elements = null;
+				$this->SendDebug('ReceiveData()', 'Key: payload_fields does not exist', 0);
+			}
+		}
         if ($elements == null) {
             $this->SendDebug('ReceiveData()', 'JSON-Decode failed', 0);
         } else {
