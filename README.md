@@ -76,6 +76,26 @@ Zur Auswahl hierfür steht:
 - Integer
 - Float
 Die Instanz liest die Daten aus dem Feld "Payload" aus. Diese Instanz macht dann Sinn, wenn die Daten nicht bei TTN Decodiert werden sondern in Symcon.
+In der Regel kann der Payload direkt bei TTN decodiert werden. Dann kann das TTN Object Device verwedet werden.  
+#### Downlink
+
+Mit TTN_Downlink() kann ein Downlink erzeugt werden. Hierfür
+
+Beispiel:
+$result =  TTN_Downlink(Instanz-ID,Port,Confirmed,Schedule,HEX-Daten);
+* Instanz-ID:
+Die Instanz-ID des TTN Object Device. (andere Instanzen werden z.Z. nicht unterstützt) 
+* Port:
+Hier kann der Port angegeben werden, der verwendet werden soll. Hier sind Werte von 0 bis 255 möglich
+
+* Confirmed:
+Hier wird festgelegt ob das Packet vom Node bestätigt werden soll oder nicht. 
+
+* Schedule:
+Hier wird festgelegt wie das Packet in der Cue behandelt werden soll. "" oder "replace" ersetzt das vorherige Packet. Außerdem kann das Packet mit "first" oder "last" in die Cue einsortiert werden. 
+
+* HEX-Daten:
+Hier werden die HEX-Daten als String übergeben. Z.B. "00AAFF"
 
 
 
@@ -84,7 +104,8 @@ Diese Instanz eignet sich für Nachrichten die ein Valides JSON als Payload verw
 Die Decodierung kann in der TTN Console in der Application unter PAYLOAD FORMATS => Decoder eingestellt werden. 
 Unterstützte Formate sind hierbei String, Boolean, Integer und Double (bzw. Float).
 
-Durch das Feld "Auto Create Variables" werden die nötigen Variablen automatisch erstellt
+Durch das Feld "Auto Create Variables" werden die nötigen Variablen automatisch erstellt.
+Hinweis: Wenn der Wert einer Float-Variable beim ersten Empfang eine ganze Zahl ist wird diese als Integer erstellt. Hier einfach die Variable löschen bis die Empfangene Variabe eine Nachkommastelle enthält.
 
 
 # Einrichtung
@@ -153,5 +174,7 @@ In der TTN-Console kann kann unter dem Device mit "SIMULATE UPLINK" eine Übertr
 Nach dem Senden werden die Daten in der Symcon-Console beim TTN-Device angezeigt. 
 ![Incomming_Data](imgs/Symcon_TTN_Incomming_Data.png?raw=true "Incomming_Data")
 
-
+# Feedback
+Bitte gebt mir Feedback zu dem Modul. 
+Dies betrifft sowohl Bugs als auch Funktionswünsche. 
 
