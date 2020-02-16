@@ -71,7 +71,7 @@ class TtnGateway extends IPSModule
 
     public function Update()
     {
-        $eui = $this->ReadPropertyString('GatewayId');
+        $eui = strtolower($this->ReadPropertyString('GatewayId'));
         if ($eui == 'eui-ffffffffffffffff') {
             return;
         }
