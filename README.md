@@ -43,7 +43,7 @@ Durch Eingabe der Application-ID und der Device-ID wird sichergestellt, dass nur
 Die Devices verbinden sich selbstständig mit einem Gateway. Wenn kein Gateway existiert wird ein Gateway erstellt. 
 
 #### Status anzueigen
-Zeigt den Status (Onlinde/Offline) mit Hilfe eines Watchdogs. Beim Empfang einer Nachricht wird der Watchdog zurückgesetzt. Ist der Watchdog-Timer abgelaufen wird der Status als Offline angezeigt. 
+Zeigt den Status (Online/Offline) mit Hilfe eines Watchdogs. Beim Empfang einer Nachricht wird der Watchdog zurückgesetzt. Ist der Watchdog-Timer abgelaufen wird der Status als Offline angezeigt. 
 
 #### Watchdog Zeit
 Hier kann die Zeitdauer für den Watchdog in Minuten eingestellt werden. 

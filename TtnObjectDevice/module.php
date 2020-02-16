@@ -25,7 +25,7 @@ class TtnObjectDevice extends IPSModule
         $this->RegisterPropertyBoolean('ShowInterval', false);
 
         $this->RegisterAttributeInteger('LastMessageTimestamp', 0);
-		$this->RegisterAttributeString("DownlinkUrl", ""); 
+        $this->RegisterAttributeString('DownlinkUrl', '');
 
         $this->RegisterTimer('WatchdogTimer', $this->ReadPropertyInteger('WatchdogTime') * 60000, 'TTN_WatchdogTimerElapsed($_IPS[\'TARGET\']);');
         $this->RegisterVariableProfiles();
@@ -189,84 +189,83 @@ class TtnObjectDevice extends IPSModule
                 $this->SetValue('Interval', $currentTimestamp - $lastTimestamp);
             }
         }
-		
-		if (array_key_exists('downlink_url', $data)) 
-		{
-			$this->WriteAttributeString('DownlinkUrl', $data->downlink_url);
-		}
-		
+
+        if (array_key_exists('downlink_url', $data)) {
+            $this->WriteAttributeString('DownlinkUrl', $data->downlink_url);
+        }
+
         $this->WriteAttributeInteger('LastMessageTimestamp', $currentTimestamp);
     }
 
-	public function Downlink(int $port, bool $confirmed, string $schedule ,string $payload)
-	{
-		$this->SendDebug('Downlink()', "Downlink()", 0);
-		
-		$url = $this->ReadAttributeString('DownlinkUrl');
-		$this->SendDebug('Downlink() URL', $url, 0);
-		
-		if($url=="")
-		{	
-			$this->SendDebug('Downlink()', "URL empty", 0);
-			return false;
-		}
-		
-		if($port<0||$port>255)
-		{	
-			$this->SendDebug('Downlink()', "Port must be between 0 and 255!", 0);
-			return false;
-		}
-		
-		$schedule = strtolower($schedule);
-		if($schedule != "first" || $schedule != "last")
-			$schedule = "replace";
-		
-		$this->SendDebug('Downlink() Payload', $payload, 0);
-		
-		if (!ctype_xdigit($payload) || (strlen($payload)%2) != 0 )
-		{	
-			$this->SendDebug('Downlink() Payload Exception', "Payload is not a HEX-String", 0);
-			return false;
-		}
-		
-		$payloadRaw = base64_encode(hex2bin($payload));
-		
-		$postPayloadArray = [
-			"dev_id" => $this->ReadPropertyString('DeviceId'),
-			"port" => $port,
-			"confirmed" => $confirmed,
-			"schedule" => $schedule,
-			"payload_raw" => $payloadRaw,
-			];
-			
-		$postPayload = json_encode($postPayloadArray);
-		$this->SendDebug('Downlink() PostPayload', $postPayload, 0);
-		$curl = curl_init();
+    public function Downlink(int $port, bool $confirmed, string $schedule, string $payload)
+    {
+        $this->SendDebug('Downlink()', 'Downlink()', 0);
 
-		curl_setopt_array($curl, array(
-			CURLOPT_URL => $url,
-			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_ENCODING => "",
-			CURLOPT_MAXREDIRS => 10,
-			CURLOPT_TIMEOUT => 0,
-			CURLOPT_FOLLOWLOCATION => true,
-			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-			CURLOPT_CUSTOMREQUEST => "POST",
-			CURLOPT_POSTFIELDS =>$postPayload,
-			CURLOPT_HTTPHEADER => array("Content-Type: application/json"),
-			CURLOPT_SAFE_UPLOAD    => true,
-			));
+        $url = $this->ReadAttributeString('DownlinkUrl');
+        $this->SendDebug('Downlink() URL', $url, 0);
 
-		$response = curl_exec($curl);
-		$statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-		curl_close($curl);
-		
-		$this->SendDebug('Downlink() Statuscode', $statusCode, 0);
-		
-		return ($statusCode==202);
-	}
-	
-	
+        if ($url == '') {
+            $this->SendDebug('Downlink()', 'URL empty', 0);
+
+            return false;
+        }
+
+        if ($port < 0 || $port > 255) {
+            $this->SendDebug('Downlink()', 'Port must be between 0 and 255!', 0);
+
+            return false;
+        }
+
+        $schedule = strtolower($schedule);
+        if ($schedule != 'first' || $schedule != 'last') {
+            $schedule = 'replace';
+        }
+
+        $this->SendDebug('Downlink() Payload', $payload, 0);
+
+        if (!ctype_xdigit($payload) || (strlen($payload) % 2) != 0) {
+            $this->SendDebug('Downlink() Payload Exception', 'Payload is not a HEX-String', 0);
+
+            return false;
+        }
+
+        $payloadRaw = base64_encode(hex2bin($payload));
+
+        $postPayloadArray = [
+            'dev_id'      => $this->ReadPropertyString('DeviceId'),
+            'port'        => $port,
+            'confirmed'   => $confirmed,
+            'schedule'    => $schedule,
+            'payload_raw' => $payloadRaw,
+        ];
+
+        $postPayload = json_encode($postPayloadArray);
+        $this->SendDebug('Downlink() PostPayload', $postPayload, 0);
+        $curl = curl_init();
+
+        curl_setopt_array($curl, [
+            CURLOPT_URL            => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING       => '',
+            CURLOPT_MAXREDIRS      => 10,
+            CURLOPT_TIMEOUT        => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST  => 'POST',
+            CURLOPT_POSTFIELDS     => $postPayload,
+            CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
+            CURLOPT_SAFE_UPLOAD    => true,
+        ]);
+
+        $response = curl_exec($curl);
+        $statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        curl_close($curl);
+
+        $this->SendDebug('Downlink() Statuscode', $statusCode, 0);
+
+        return $statusCode == 202;
+    }
+
     private function RegisterVariableProfiles()
     {
         $this->SendDebug('RegisterVariableProfiles()', 'RegisterVariableProfiles()', 0);
