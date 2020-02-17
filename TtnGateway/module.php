@@ -13,10 +13,11 @@ class TtnGateway extends IPSModule
         $this->RegisterPropertyInteger('UpdateInterval', 120);
         $this->RegisterPropertyInteger('ConnectionWarningInterval', 900);
         $this->RegisterTimer('Update', $this->ReadPropertyInteger('UpdateInterval') * 1000, 'TTN_Update($_IPS[\'TARGET\']);');
+		$this->RegisterVariableProfiles();
 
         $this->RegisterVariableInteger('uplink', $this->Translate('uplink messages'), '', 1);
         $this->RegisterVariableInteger('downlink', $this->Translate('downlink messages'), '', 2);
-        $this->RegisterVariableInteger('lastseenbevore', $this->Translate('last seen bevore'), '', 3);
+        $this->RegisterVariableInteger('lastseenbevore', $this->Translate('last seen bevore'), 'TTN_second', 3);
         $this->RegisterVariableBoolean('online', $this->Translate('online'), '', 4);
     }
 
@@ -72,44 +73,50 @@ class TtnGateway extends IPSModule
     public function Update()
     {
         $eui = strtolower($this->ReadPropertyString('GatewayId'));
-        if ($eui == 'eui-ffffffffffffffff') {
-            $this->SendDebug('Update()', '$eui == eui-ffffffffffffffff (request stopped) ', 0);
-
+        if ($eui == 'eui-ffffffffffffffff') 
+		{
+			$this->SendDebug('Update()', '$eui == eui-ffffffffffffffff (request stopped) ' , 0);
             return;
         }
         $url = 'http://noc.thethingsnetwork.org:8085/api/v2/gateways/'.$eui;
 
-        $curl = curl_init();
+        
+			$curl = curl_init();
 
-        curl_setopt_array($curl, [
-            CURLOPT_URL            => $url,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING       => '',
-            CURLOPT_MAXREDIRS      => 10,
-            CURLOPT_TIMEOUT        => 0,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST  => 'GET',
-        ]);
+			curl_setopt_array($curl, array(
+				CURLOPT_URL => $url,
+				CURLOPT_RETURNTRANSFER => true,
+				CURLOPT_ENCODING => "",
+				CURLOPT_MAXREDIRS => 10,
+				CURLOPT_TIMEOUT => 0,
+				CURLOPT_FOLLOWLOCATION => true,
+				CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+				CURLOPT_CUSTOMREQUEST => "GET",
+			));
 
-        $content = curl_exec($curl);
-        $statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-        curl_close($curl);
-        //echo $content;
+			$content = curl_exec($curl);
+			$statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+			curl_close($curl);
+			//echo $content;
 
-        $this->SendDebug('Update() Content: ', $content, 0);
-        $this->SendDebug('Update() HTTP statusCode: ', $statusCode, 0);
+			
+		
+		$this->SendDebug('Update() Content: ', $content, 0);
+		$this->SendDebug('Update() HTTP statusCode: ', $statusCode, 0);
 
-        if ($statusCode == 404) {
-            $this->SetStatus(201);
-            $this->SendDebug('Update() ', 'Status not found. Invalid Gateway ID?', 0);
 
-            return;
-        }
+		if($statusCode == 404) 
+		{
+			$this->SetStatus(201);
+			$this->SendDebug('Update() ', "Status not found. Invalid Gateway ID?", 0);
+			return;
+		}
 
-        if ($statusCode != 200) {
-            return;
-        }
+		if($statusCode != 200) 
+		{
+			return;
+		}
+		
 
         $data = json_decode((string) $content);
 
@@ -126,10 +133,10 @@ class TtnGateway extends IPSModule
         $GwTimeStamp = (int) (($data->time) / 1000000000);
         $difference = ($currentTimestamp - $GwTimeStamp);
 
-        $this->MaintainVariable('online', $this->Translate('Online'), 0, '', 1, 1);
+        $this->MaintainVariable('online', $this->Translate('Online'), 0, 'TTN_Online', 1, 1);
         $this->MaintainVariable('uplink', $this->Translate('Online'), 1, '', 1, 1);
         $this->MaintainVariable('downlink', $this->Translate('Online'), 1, '', 1, 1);
-        $this->MaintainVariable('lastseenbevore', $this->Translate('Online'), 1, '', 1, 1);
+        $this->MaintainVariable('lastseenbevore', $this->Translate('Online'), 1, 'TTN_second', 1, 1);
 
         $this->SetValue('online', $difference < $this->ReadPropertyInteger('ConnectionWarningInterval'));
 
@@ -140,6 +147,22 @@ class TtnGateway extends IPSModule
             $this->SetValue('downlink', $data->downlink);
         }
         $this->SetValue('lastseenbevore', $difference);
-        $this->SetStatus(102);
+		$this->SetStatus(102);
     }
+	 private function RegisterVariableProfiles()
+    {
+        $this->SendDebug('RegisterVariableProfiles()', 'RegisterVariableProfiles()', 0);
+
+        if (!IPS_VariableProfileExists('TTN_Online')) {
+            IPS_CreateVariableProfile('TTN_Online', 0);
+            IPS_SetVariableProfileAssociation('TTN_Online', 0, $this->Translate('Offline'), '', 0xFF0000);
+            IPS_SetVariableProfileAssociation('TTN_Online', 1, $this->Translate('Online'), '', 0x00FF00);
+        }
+      
+        if (!IPS_VariableProfileExists('TTN_second')) {
+            IPS_CreateVariableProfile('TTN_second', 1);
+            IPS_SetVariableProfileText('TTN_second', '', ' s');
+        }
+    }
+	
 }

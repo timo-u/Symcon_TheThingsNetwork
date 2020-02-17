@@ -3,7 +3,7 @@
     {
       "type": "ValidationTextBox",
       "name": "GatewayId",
-      "caption": "GatewayId ID"
+      "caption": "Gateway ID"
     },
     {
       "type": "Select",

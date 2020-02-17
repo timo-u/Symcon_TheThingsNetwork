@@ -17,7 +17,9 @@
 	  "15 minutes" : "15 Minuten",
 	  "30 minutes" : "30 Minuten",
 	  "1 hour" : "1 Stunde",
+	  "Invalid Gateway ID" : "Ungültige Gateway ID",
 	  "Update": "Aktualisiern"
+	  
     }
 	}
 }
