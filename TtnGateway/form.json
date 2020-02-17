@@ -112,5 +112,6 @@
 	  ],
     "status":
     [
-	]
+        { "code": 201, "icon": "error", "caption": "Invalid Gateway ID" }
+    ]
 }

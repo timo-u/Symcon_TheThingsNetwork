@@ -72,18 +72,50 @@ class TtnGateway extends IPSModule
     public function Update()
     {
         $eui = strtolower($this->ReadPropertyString('GatewayId'));
-        if ($eui == 'eui-ffffffffffffffff') {
+        if ($eui == 'eui-ffffffffffffffff') 
+		{
+			$this->SendDebug('Update()', '$eui == eui-ffffffffffffffff (request stopped) ' , 0);
             return;
         }
         $url = 'http://noc.thethingsnetwork.org:8085/api/v2/gateways/'.$eui;
 
-        try {
-            $content = file_get_contents($url);
-        } catch (Exception $e) {
-            $this->SendDebug('Update() Exception: ', $e, 0);
+        
+			$curl = curl_init();
 
-            return;
-        }
+			curl_setopt_array($curl, array(
+				CURLOPT_URL => $url,
+				CURLOPT_RETURNTRANSFER => true,
+				CURLOPT_ENCODING => "",
+				CURLOPT_MAXREDIRS => 10,
+				CURLOPT_TIMEOUT => 0,
+				CURLOPT_FOLLOWLOCATION => true,
+				CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+				CURLOPT_CUSTOMREQUEST => "GET",
+			));
+
+			$content = curl_exec($curl);
+			$statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+			curl_close($curl);
+			//echo $content;
+
+			
+		
+		$this->SendDebug('Update() Content: ', $content, 0);
+		$this->SendDebug('Update() HTTP statusCode: ', $statusCode, 0);
+
+
+		if($statusCode == 404) 
+		{
+			$this->SetStatus(201);
+			$this->SendDebug('Update() ', "Status not found. Invalid Gateway ID?", 0);
+			return;
+		}
+
+		if($statusCode != 200) 
+		{
+			return;
+		}
+		
 
         $data = json_decode((string) $content);
 
@@ -114,5 +146,6 @@ class TtnGateway extends IPSModule
             $this->SetValue('downlink', $data->downlink);
         }
         $this->SetValue('lastseenbevore', $difference);
+		$this->SetStatus(102);
     }
 }
