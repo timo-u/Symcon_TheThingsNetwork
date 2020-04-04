@@ -1,0 +1,14 @@
+{
+	"id": "{841F0130-4ED6-89FA-7DFD-5226A54C4311}",
+	"name": "TtnEnvironmentSensor",
+	"type": 3,
+	"vendor": "timo-u.de",
+	"aliases": 
+	[
+		"TTN Environment Sensor"
+	],
+	"parentRequirements": ["{345C55AB-5EAF-4A69-8B24-93B97629CD09}"],
+	"childRequirements": [],
+	"implemented": ["{474DDD47-79C2-4B83-AE33-79326BF07B2B}"],
+	"prefix": "TTN"
+}
