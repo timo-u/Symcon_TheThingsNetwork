@@ -72,7 +72,7 @@ declare(strict_types=1);
             $snr = -200;
             $gatewayCount = 0;
 
-            if (property_exists( $metadata, 'gateways')) {
+            if (property_exists($metadata, 'gateways')) {
                 $gateways = $metadata->gateways;
 
                 foreach ($gateways as $gateway) {
@@ -88,7 +88,7 @@ declare(strict_types=1);
             $this->SendDebug('ReceiveData()', 'Best RSSI: '.$rssi, 0);
 
             if ($this->ReadPropertyBoolean('ShowMeta')) {
-                if (property_exists($metadata , 'frequency')) {
+                if (property_exists($metadata, 'frequency')) {
                     $this->SetValue('Meta_Informations', 'Freq: '.$metadata->frequency.
                 ' Modulation: '.$metadata->modulation.
                 ' Data Rate: '.$metadata->data_rate.
