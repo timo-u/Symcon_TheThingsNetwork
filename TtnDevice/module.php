@@ -72,7 +72,7 @@ declare(strict_types=1);
             $snr = -200;
             $gatewayCount = 0;
 
-            if (property_exists( $metadata, ('gateways')) {
+            if (property_exists( $metadata, 'gateways')) {
                 $gateways = $metadata->gateways;
 
                 foreach ($gateways as $gateway) {
