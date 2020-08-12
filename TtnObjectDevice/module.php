@@ -98,7 +98,7 @@ class TtnObjectDevice extends IPSModule
             $elements = json_decode($payload);
             $this->SendDebug('ReceiveData()', 'Payload: '.$payload, 0);
         } else {
-            if (array_key_exists('payload_fields', $data)) {
+            if (property_exists($data,'payload_fields')) {
                 $elements = $data->payload_fields;
                 $this->SendDebug('ReceiveData()', 'Payload: '.json_encode($elements), 0);
             } else {
@@ -142,7 +142,7 @@ class TtnObjectDevice extends IPSModule
         $snr = -200;
         $gatewayCount = 0;
 
-        if (array_key_exists('gateways', $metadata)) {
+        if (property_exists($metadata,'gateways')) {
             $gateways = $metadata->gateways;
             foreach ($gateways as $gateway) {
                 if ($snr < $gateway->snr) {
@@ -159,7 +159,7 @@ class TtnObjectDevice extends IPSModule
         $this->SendDebug('ReceiveData()', 'Frame Counter : '.$data->counter, 0);
 
         if ($this->ReadPropertyBoolean('ShowMeta')) {
-            if (array_key_exists('frequency', $metadata)) {
+            if (property_exists($metadata,'frequency')) {
                 $this->SetValue('Meta_Informations', 'Freq: '.$metadata->frequency.
                 ' Modulation: '.$metadata->modulation.
                 ' Data Rate: '.$metadata->data_rate.
@@ -190,7 +190,7 @@ class TtnObjectDevice extends IPSModule
             }
         }
 
-        if (array_key_exists('downlink_url', $data)) {
+        if (property_exists($data,'downlink_url')) {
             $this->WriteAttributeString('DownlinkUrl', $data->downlink_url);
         }
 

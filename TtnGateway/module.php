@@ -134,10 +134,10 @@ class TtnGateway extends IPSModule
 
         $this->SetValue('online', $difference < $this->ReadPropertyInteger('ConnectionWarningInterval'));
 
-        if (array_key_exists('uplink', $data)) {
+        if (property_exists($data, 'uplink')) {
             $this->SetValue('uplink', $data->uplink);
         }
-        if (array_key_exists('downlink', $data)) {
+        if (property_exists($data, 'downlink')) {
             $this->SetValue('downlink', $data->downlink);
         }
         $this->SetValue('lastseenbevore', $difference);
