@@ -6,10 +6,13 @@ Erstellt und getestet wurde das Modul mit der HTTP Integration (v2.6.0).
 
 ## Vorraussetzungen 
 * natürlich IP-Symcon
-* IP-Symcon muss vom Internt über HTTP(S) erreichbar sein 
-	* Symcon Connect dienst 
-   	* Aktive Subscription erforderlich
- 	* Proxy-Server (HTTPS)    
+	* Symcon ab V5.0
+		* IP-Symcon muss vom Internt über HTTP(S) erreichbar sein  
+		* Symcon Connect dienst 
+   		* Aktive Subscription erforderlich
+ 		* Proxy-Server (HTTPS) <br>   
+ODER 	
+	* Symcon ab V5.5 mit MQTT Client
 * The Things Network Account 
 
 
@@ -108,7 +111,7 @@ Durch das Feld "Auto Create Variables" werden die nötigen Variablen automatisch
 Hinweis: Wenn der Wert einer Float-Variable beim ersten Empfang eine ganze Zahl ist wird diese als Integer erstellt. Hier einfach die Variable löschen bis die Empfangene Variabe eine Nachkommastelle enthält.
 
 
-# Einrichtung
+# Einrichtung via HTTP Integration
 Zunächst muss Symcon mit aktivem Connect-Dienst sowie ein Acount bei The Things Network zur verfüngung stehen
 
 ## Einrichtung des TTN HTTP Integration Gateways
@@ -166,7 +169,22 @@ In Symcon wird "HEX-String" als Datentyp ausgewählt.
 
 Nun ist das Gerät mit Symcon verbunden. 
 
-## Test der Verbindung 
+
+# Einrichtung via MQTT (TTN MQTT Device)
+
+## Client Socket 
+![MQTT Client Socket](imgs/Symcon_TTN_MQTT_Client_Socket.png?raw=true "MQTT Client Socket")
+
+## MQTT Client 
+![MQTT Client](imgs/Symcon_TTN_MQTT_Client.png?raw=true "MQTT Client")
+Benutzername: Application Name 
+Passwort: ACCESS KEY
+
+## TTN MQTT Device
+Die Einstellungen im TTN MQTT Device sind analog zu dem TTN Object Device.
+
+
+# Test der Verbindung 
 
 In der TTN-Console kann kann unter dem Device mit "SIMULATE UPLINK" eine Übertragung simuliert werden. Hierfür müssen die Daten hier im HEX-Format eingegeben werden. z.B. "AA BB CC"  
 ![Simulate Uplink](imgs/Symcon_TTN_Simulate_Uplink.png?raw=true "Simulate Uplink")
