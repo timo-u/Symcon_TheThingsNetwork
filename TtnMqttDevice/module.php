@@ -7,7 +7,7 @@ class TtnMqttDevice extends IPSModule
         //Never delete this line!
         parent::Create();
 
-		//$this->RegisterPropertyString('MQTTTopic', 'MQTTTopic');
+        //$this->RegisterPropertyString('MQTTTopic', 'MQTTTopic');
         $this->RegisterPropertyString('ApplicationId', 'ApplicationId');
         $this->RegisterPropertyString('DeviceId', 'DeviceId');
         $this->RegisterPropertyBoolean('GetContentFromRawPayload', false);
@@ -37,13 +37,12 @@ class TtnMqttDevice extends IPSModule
         parent::ApplyChanges();
 
         $this->Maintain();
-		
-		//Setze Filter für ReceiveData
 
+        //Setze Filter für ReceiveData
 
-        $MQTTTopic = $this->ReadPropertyString('ApplicationId')."/devices/".$this->ReadPropertyString('DeviceId')."/up";
-        $this->SetReceiveDataFilter('.*'.  $MQTTTopic. '.*');
-		
+        $MQTTTopic = $this->ReadPropertyString('ApplicationId').'/devices/'.$this->ReadPropertyString('DeviceId').'/up';
+        $this->SetReceiveDataFilter('.*'.$MQTTTopic.'.*');
+
         //$this->WatchdogReset();
     }
 
@@ -87,15 +86,14 @@ class TtnMqttDevice extends IPSModule
     public function ReceiveData($JSONString)
     {
         $data = json_decode($JSONString);
-		$this->SendDebug('ReceiveData()','$JSONString '.$JSONString, 0);
-		$this->SendDebug('ReceiveData() data ',json_encode($data), 0);
+        $this->SendDebug('ReceiveData()', '$JSONString '.$JSONString, 0);
+        $this->SendDebug('ReceiveData() data ', json_encode($data), 0);
         $data = $data->Payload;
-		$data = json_decode($data);
-		$this->SendDebug('ReceiveData() data->Payload ',json_encode($data), 0);
-		//$data = $data->Payload;
-		//$this->SendDebug('ReceiveData()','data->Buffer->Payload '.$data, 0);
-		
-		
+        $data = json_decode($data);
+        $this->SendDebug('ReceiveData() data->Payload ', json_encode($data), 0);
+        //$data = $data->Payload;
+        //$this->SendDebug('ReceiveData()','data->Buffer->Payload '.$data, 0);
+
         if ($data->app_id != $this->ReadPropertyString('ApplicationId')) {
             return;
         }
