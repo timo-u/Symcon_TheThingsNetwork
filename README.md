@@ -177,8 +177,10 @@ Nun ist das Gerät mit Symcon verbunden.
 
 ## MQTT Client 
 ![MQTT Client](imgs/Symcon_TTN_MQTT_Client.png?raw=true "MQTT Client")
-Benutzername: Application Name 
-Passwort: ACCESS KEY
+* Benutzername: 
+Application Name 
+* Passwort:
+ACCESS KEY
 
 ## TTN MQTT Device
 Die Einstellungen im TTN MQTT Device sind analog zu dem TTN Object Device.
