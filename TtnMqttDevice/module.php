@@ -7,7 +7,7 @@ class TtnMqttDevice extends IPSModule
         //Never delete this line!
         parent::Create();
 
-		//$this->RegisterPropertyString('MQTTTopic', 'MQTTTopic');
+        //$this->RegisterPropertyString('MQTTTopic', 'MQTTTopic');
         $this->RegisterPropertyString('ApplicationId', 'ApplicationId');
         $this->RegisterPropertyString('DeviceId', 'DeviceId');
         $this->RegisterPropertyBoolean('GetContentFromRawPayload', false);
@@ -37,13 +37,12 @@ class TtnMqttDevice extends IPSModule
         parent::ApplyChanges();
 
         $this->Maintain();
-		
-		//Setze Filter für ReceiveData
 
+        //Setze Filter für ReceiveData
 
-        $MQTTTopic = $this->ReadPropertyString('ApplicationId')."/devices/".$this->ReadPropertyString('DeviceId')."/up";
-        $this->SetReceiveDataFilter('.*'.  $MQTTTopic. '.*');
-		
+        $MQTTTopic = $this->ReadPropertyString('ApplicationId').'/devices/'.$this->ReadPropertyString('DeviceId').'/up';
+        $this->SetReceiveDataFilter('.*'.$MQTTTopic.'.*');
+
         //$this->WatchdogReset();
     }
 
@@ -87,15 +86,14 @@ class TtnMqttDevice extends IPSModule
     public function ReceiveData($JSONString)
     {
         $data = json_decode($JSONString);
-		$this->SendDebug('ReceiveData()','$JSONString '.$JSONString, 0);
-		$this->SendDebug('ReceiveData() data ',json_encode($data), 0);
+        $this->SendDebug('ReceiveData()', '$JSONString '.$JSONString, 0);
+        $this->SendDebug('ReceiveData() data ', json_encode($data), 0);
         $data = $data->Payload;
-		$data = json_decode($data);
-		$this->SendDebug('ReceiveData() data->Payload ',json_encode($data), 0);
-		//$data = $data->Payload;
-		//$this->SendDebug('ReceiveData()','data->Buffer->Payload '.$data, 0);
-		
-		
+        $data = json_decode($data);
+        $this->SendDebug('ReceiveData() data->Payload ', json_encode($data), 0);
+        //$data = $data->Payload;
+        //$this->SendDebug('ReceiveData()','data->Buffer->Payload '.$data, 0);
+
         if ($data->app_id != $this->ReadPropertyString('ApplicationId')) {
             return;
         }
@@ -204,7 +202,6 @@ class TtnMqttDevice extends IPSModule
             }
         }
 
-       
         $this->WriteAttributeInteger('LastMessageTimestamp', $currentTimestamp);
     }
 
@@ -243,17 +240,17 @@ class TtnMqttDevice extends IPSModule
 
         $Payload = json_encode($postPayloadArray);
         $this->SendDebug('Downlink() Payload', $Payload, 0);
-        
-		$MQTTTopic = $this->ReadPropertyString('ApplicationId')."/devices/".$this->ReadPropertyString('DeviceId')."/down";
-		$this->SendDebug('Downlink() Topic', $MQTTTopic, 0);
-		$result = $this->sendMQTT($MQTTTopic, $Payload);
+
+        $MQTTTopic = $this->ReadPropertyString('ApplicationId').'/devices/'.$this->ReadPropertyString('DeviceId').'/down';
+        $this->SendDebug('Downlink() Topic', $MQTTTopic, 0);
+        $result = $this->sendMQTT($MQTTTopic, $Payload);
 
         $this->SendDebug('Downlink() Successfull', intval($result), 0);
 
         return $result;
     }
-	
-	 protected function sendMQTT($Topic, $Payload)
+
+    protected function sendMQTT($Topic, $Payload)
     {
         $resultServer = true;
         $resultClient = true;
@@ -265,7 +262,7 @@ class TtnMqttDevice extends IPSModule
         $Server['Topic'] = $Topic;
         $Server['Payload'] = $Payload;
         $ServerJSON = json_encode($Server, JSON_UNESCAPED_SLASHES);
-        $this->SendDebug('Downlink()'. 'MQTT Server', $ServerJSON, 0);
+        $this->SendDebug('Downlink()'.'MQTT Server', $ServerJSON, 0);
         $resultServer = @$this->SendDataToParent($ServerJSON);
 
         //MQTT Client
@@ -280,13 +277,11 @@ class TtnMqttDevice extends IPSModule
         $Client['Buffer'] = $BufferJSON;
 
         $ClientJSON = json_encode($Client);
-        $this->SendDebug('Downlink()' . 'MQTT Client', $ClientJSON, 0);
+        $this->SendDebug('Downlink()'.'MQTT Client', $ClientJSON, 0);
         $resultClient = @$this->SendDataToParent($ClientJSON);
 
-        return ($resultServer === false && $resultClient === false);
+        return $resultServer === false && $resultClient === false;
     }
-	
-	
 
     private function RegisterVariableProfiles()
     {
