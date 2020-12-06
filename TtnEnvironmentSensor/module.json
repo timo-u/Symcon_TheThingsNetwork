@@ -2,7 +2,7 @@
 	"id": "{841F0130-4ED6-89FA-7DFD-5226A54C4311}",
 	"name": "TtnEnvironmentSensor",
 	"type": 3,
-	"vendor": "timo-u.de",
+	"vendor": "The Things Network",
 	"aliases": 
 	[
 		"TTN Environment Sensor"

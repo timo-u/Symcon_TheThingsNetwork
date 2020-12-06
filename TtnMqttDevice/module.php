@@ -7,7 +7,7 @@ class TtnMqttDevice extends IPSModule
         //Never delete this line!
         parent::Create();
 
-        //$this->RegisterPropertyString('MQTTTopic', 'MQTTTopic');
+		//$this->RegisterPropertyString('MQTTTopic', 'MQTTTopic');
         $this->RegisterPropertyString('ApplicationId', 'ApplicationId');
         $this->RegisterPropertyString('DeviceId', 'DeviceId');
         $this->RegisterPropertyBoolean('GetContentFromRawPayload', false);
@@ -37,12 +37,13 @@ class TtnMqttDevice extends IPSModule
         parent::ApplyChanges();
 
         $this->Maintain();
+		
+		//Setze Filter für ReceiveData
 
-        //Setze Filter für ReceiveData
 
-        $MQTTTopic = $this->ReadPropertyString('ApplicationId').'/devices/'.$this->ReadPropertyString('DeviceId').'/up';
-        $this->SetReceiveDataFilter('.*'.$MQTTTopic.'.*');
-
+        $MQTTTopic = $this->ReadPropertyString('ApplicationId')."/devices/".$this->ReadPropertyString('DeviceId')."/up";
+        $this->SetReceiveDataFilter('.*'.  $MQTTTopic. '.*');
+		
         //$this->WatchdogReset();
     }
 
@@ -86,14 +87,15 @@ class TtnMqttDevice extends IPSModule
     public function ReceiveData($JSONString)
     {
         $data = json_decode($JSONString);
-        $this->SendDebug('ReceiveData()', '$JSONString '.$JSONString, 0);
-        $this->SendDebug('ReceiveData() data ', json_encode($data), 0);
+		$this->SendDebug('ReceiveData()','$JSONString '.$JSONString, 0);
+		$this->SendDebug('ReceiveData() data ',json_encode($data), 0);
         $data = $data->Payload;
-        $data = json_decode($data);
-        $this->SendDebug('ReceiveData() data->Payload ', json_encode($data), 0);
-        //$data = $data->Payload;
-        //$this->SendDebug('ReceiveData()','data->Buffer->Payload '.$data, 0);
-
+		$data = json_decode($data);
+		$this->SendDebug('ReceiveData() data->Payload ',json_encode($data), 0);
+		//$data = $data->Payload;
+		//$this->SendDebug('ReceiveData()','data->Buffer->Payload '.$data, 0);
+		
+		
         if ($data->app_id != $this->ReadPropertyString('ApplicationId')) {
             return;
         }
@@ -202,25 +204,13 @@ class TtnMqttDevice extends IPSModule
             }
         }
 
-        if (property_exists($data, 'downlink_url')) {
-            $this->WriteAttributeString('DownlinkUrl', $data->downlink_url);
-        }
-
+       
         $this->WriteAttributeInteger('LastMessageTimestamp', $currentTimestamp);
     }
 
     public function Downlink(int $port, bool $confirmed, string $schedule, string $payload)
     {
         $this->SendDebug('Downlink()', 'Downlink()', 0);
-
-        $url = $this->ReadAttributeString('DownlinkUrl');
-        $this->SendDebug('Downlink() URL', $url, 0);
-
-        if ($url == '') {
-            $this->SendDebug('Downlink()', 'URL empty', 0);
-
-            return false;
-        }
 
         if ($port < 0 || $port > 255) {
             $this->SendDebug('Downlink()', 'Port must be between 0 and 255!', 0);
@@ -251,32 +241,52 @@ class TtnMqttDevice extends IPSModule
             'payload_raw' => $payloadRaw,
         ];
 
-        $postPayload = json_encode($postPayloadArray);
-        $this->SendDebug('Downlink() PostPayload', $postPayload, 0);
-        $curl = curl_init();
+        $Payload = json_encode($postPayloadArray);
+        $this->SendDebug('Downlink() Payload', $Payload, 0);
+        
+		$MQTTTopic = $this->ReadPropertyString('ApplicationId')."/devices/".$this->ReadPropertyString('DeviceId')."/down";
+		$this->SendDebug('Downlink() Topic', $MQTTTopic, 0);
+		$result = $this->sendMQTT($MQTTTopic, $Payload);
 
-        curl_setopt_array($curl, [
-            CURLOPT_URL            => $url,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING       => '',
-            CURLOPT_MAXREDIRS      => 10,
-            CURLOPT_TIMEOUT        => 0,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST  => 'POST',
-            CURLOPT_POSTFIELDS     => $postPayload,
-            CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
-            CURLOPT_SAFE_UPLOAD    => true,
-        ]);
+        $this->SendDebug('Downlink() Successfull', intval($result), 0);
 
-        $response = curl_exec($curl);
-        $statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-        curl_close($curl);
-
-        $this->SendDebug('Downlink() Statuscode', $statusCode, 0);
-
-        return $statusCode == 202;
+        return $result;
     }
+	
+	 protected function sendMQTT($Topic, $Payload)
+    {
+        $resultServer = true;
+        $resultClient = true;
+        //MQTT Server
+        $Server['DataID'] = '{043EA491-0325-4ADD-8FC2-A30C8EEB4D3F}';
+        $Server['PacketType'] = 3;
+        $Server['QualityOfService'] = 0;
+        $Server['Retain'] = false;
+        $Server['Topic'] = $Topic;
+        $Server['Payload'] = $Payload;
+        $ServerJSON = json_encode($Server, JSON_UNESCAPED_SLASHES);
+        $this->SendDebug('Downlink()'. 'MQTT Server', $ServerJSON, 0);
+        $resultServer = @$this->SendDataToParent($ServerJSON);
+
+        //MQTT Client
+        $Buffer['PacketType'] = 3;
+        $Buffer['QualityOfService'] = 0;
+        $Buffer['Retain'] = false;
+        $Buffer['Topic'] = $Topic;
+        $Buffer['Payload'] = $Payload;
+        $BufferJSON = json_encode($Buffer, JSON_UNESCAPED_SLASHES);
+
+        $Client['DataID'] = '{97475B04-67C3-A74D-C970-E9409B0EFA1D}';
+        $Client['Buffer'] = $BufferJSON;
+
+        $ClientJSON = json_encode($Client);
+        $this->SendDebug('Downlink()' . 'MQTT Client', $ClientJSON, 0);
+        $resultClient = @$this->SendDataToParent($ClientJSON);
+
+        return ($resultServer === false && $resultClient === false);
+    }
+	
+	
 
     private function RegisterVariableProfiles()
     {
