@@ -39,7 +39,7 @@ class TtnMqttDevice extends IPSModule
         //Setze Filter für ReceiveData
         $MQTTTopic = "v3/" .$this->ReadPropertyString('ApplicationId')."@" .$this->ReadPropertyString('Tenant').'/devices/'.$this->ReadPropertyString('DeviceId').'/up';
         $this->SetReceiveDataFilter('.*'.$MQTTTopic.'.*');
-        )
+    
     }
 
     private function Maintain()
