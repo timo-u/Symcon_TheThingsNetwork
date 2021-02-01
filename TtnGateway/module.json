@@ -3,8 +3,7 @@
 	"name": "TtnGateway",
 	"type": 3,
 	"vendor": "The Things Network",
-	"aliases": 
-	[
+	"aliases": [
 		"TTN Gateway"
 	],
 	"parentRequirements": [],

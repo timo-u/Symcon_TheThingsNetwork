@@ -1,11 +1,17 @@
 {
-    "elements":
-    [
-		{ "type": "ValidationTextBox", "name": "Authorization", "caption": "Authorization" },
-        { "type": "ValidationTextBox", "name": "HookName", "caption": "HookName" }   
-    ],
-    "actions":
-    [
+	"elements": [
+		{
+			"type": "ValidationTextBox",
+			"name": "Authorization",
+			"caption": "Authorization"
+		},
+		{
+			"type": "ValidationTextBox",
+			"name": "HookName",
+			"caption": "HookName"
+		}
+	],
+	"actions": [
 		{
 			"type": "Button",
 			"label": "Register WebHook",
@@ -20,16 +26,12 @@
 			"type": "Button",
 			"label": "Open Webhook",
 			"onClick": "TTN_OpenWebhook($id);"
-		}
-		,
+		},
 		{
 			"type": "Button",
 			"label": "Open TTN-Console",
-			"onClick": "echo 'https://console.thethingsnetwork.org/applications'; " 
+			"onClick": "echo 'https://console.thethingsnetwork.org/applications'; "
 		}
-	
 	],
-    "status":
-    [
-    ]
+	"status": []
 }

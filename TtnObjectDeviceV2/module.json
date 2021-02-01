@@ -1,10 +1,10 @@
 {
-	"id": "{7EC18F89-5FDD-6BB3-EA57-F3F012E429FA}",
-	"name": "TtnDevice",
+	"id": "{2E310134-AA03-4B23-95DC-AD302397FBDC}",
+	"name": "TtnObjectDeviceV2",
 	"type": 3,
 	"vendor": "The Things Network",
 	"aliases": [
-		"TTN Device (V3)"
+		"TTN Object Device (V2)"
 	],
 	"parentRequirements": [
 		"{345C55AB-5EAF-4A69-8B24-93B97629CD09}"

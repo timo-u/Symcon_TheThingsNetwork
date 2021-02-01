@@ -3,12 +3,15 @@
 	"name": "TtnHttpGateway",
 	"type": 1,
 	"vendor": "The Things Network",
-	"aliases": 
-	[
+	"aliases": [
 		"TTN HTTP Integration Gateway"
 	],
 	"parentRequirements": [],
-	"childRequirements": ["{474DDD47-79C2-4B83-AE33-79326BF07B2B}"],
-	"implemented": ["{345C55AB-5EAF-4A69-8B24-93B97629CD09}"],
+	"childRequirements": [
+		"{474DDD47-79C2-4B83-AE33-79326BF07B2B}"
+	],
+	"implemented": [
+		"{345C55AB-5EAF-4A69-8B24-93B97629CD09}"
+	],
 	"prefix": "TTN"
 }

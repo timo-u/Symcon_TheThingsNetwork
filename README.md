@@ -1,5 +1,4 @@
 # Symcon_TheThingsNetwork
-[![StyleCI Status](https://styleci.io/repos/175640288/shield)](https://styleci.io/repos/175640288)
 
 Das Modul verbindet das The Things Network (https://www.thethingsnetwork.org/) mit IP-Symcon (https://www.symcon.de). Hierfür wird die HTTP-Integration genutzt. 
 Erstellt und getestet wurde das Modul mit der HTTP Integration (v2.6.0).
@@ -15,6 +14,17 @@ ODER
 	* Symcon ab V5.5 mit MQTT Client
 * The Things Network Account 
 
+
+## Aktualisierungen 
+* 1.5 
+	* Anpassungen für Stack V3 
+	* Alle Module für den alten Stack V2 werden mit V2 gekennzechnet.
+	* "TTN Device" für V3 ersetzt "TTN Object Device" da alles darüber abbildbar ist.
+	* "TTN MQTT Device" für V3 ersetzt "TTN MQTT Object Device" für V2.
+	* Alle V2 Instanzen haben zeigen die Meldung an, dass man auf V3 migrieren soll.
+	* Die V2 Instanzen bleiben in dem Modul, bis TTN V2 abgeschaltet wird. 
+	* Das HTTPIntegrationGateway ist für V2 und V3 nutzbar.
+	* TTN Gateway (Monitoring der Gateways) ist aktuell noch für den V2 Stack 
 
 ## TTN HTTP Integration Gateway
 Das Gateway (IO-Instanz) ist der Zentrale Empfänger in Symcon, in dem alle Nachrichten von TTN eingehen. 

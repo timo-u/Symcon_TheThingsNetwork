@@ -21,10 +21,21 @@
 			"Meta Informations": "Metadaten",
 			"RSSI": "RSSI",
 			"SNR": "SNR",
-			"Spreading Factor": "Spreizfaktor",
 			"Gateway Count": "Gateway Anzahl",
-			"Auto Create Variables": "Variablen automatisch erstellen",
-			"Get Content From Raw-Payload": "Inhalt aus dem RAW-Payload entnehmen"
+			"Enable Logging": "Logging Aktivieren",
+			"Disable Logging": "Logging Deaktivieren",
+			"Show Temperature": "Zeige Temperatur",
+			"Show Humidity": "Zeige Feuchtigkeit",
+			"Show Pressure": "Zeige Luftdruck",
+			"Show Battery Voltage": "Zeige Batterie-Spannung",
+			"Show Solar Voltage": "Zeige Solarzellen-Spannung",
+			"Show Error State": "Zeige Fehlerfeld",
+			"Temperature": "Temperatur",
+			"Humidity": "Feuchtigkeit",
+			"Pressure": "Luftdruck",
+			"Battery Voltage": "Batterie-Spannung",
+			"Solar Voltage": "Solarzellen-Spannung",
+			"Error State": "Fehler"
 		}
 	}
 }

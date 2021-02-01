@@ -92,26 +92,28 @@
       ]
     }
   ],
-    "actions":
-    [
-      {
-        "type": "Button",
-        "label": "Update",
-        "onClick": "TTN_Update($id);"
-      } ,
-	  {
-        "type": "Button",
-        "label": "Enable Logging",
-        "onClick": "TTN_EnableLogging($id);"
-      } ,
-	  {
-        "type": "Button",
-        "label": "Disable Logging",
-        "onClick": "TTN_DisableLogging($id);"
-      } 	 
-	  ],
-    "status":
-    [
-        { "code": 201, "icon": "error", "caption": "Invalid Gateway ID" }
-    ]
+  "actions": [
+    {
+      "type": "Button",
+      "label": "Update",
+      "onClick": "TTN_Update($id);"
+    },
+    {
+      "type": "Button",
+      "label": "Enable Logging",
+      "onClick": "TTN_EnableLogging($id);"
+    },
+    {
+      "type": "Button",
+      "label": "Disable Logging",
+      "onClick": "TTN_DisableLogging($id);"
+    }
+  ],
+  "status": [
+    {
+      "code": 201,
+      "icon": "error",
+      "caption": "Invalid Gateway ID"
+    }
+  ]
 }

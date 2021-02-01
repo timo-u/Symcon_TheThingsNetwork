@@ -1,26 +1,21 @@
 <?php
 
-declare(strict_types=1);
-class TtnEnvironmentSensor extends IPSModule
+class TtnMqttDeviceV2 extends IPSModule
 {
     public function Create()
     {
         //Never delete this line!
         parent::Create();
 
+        //$this->RegisterPropertyString('MQTTTopic', 'MQTTTopic');
         $this->RegisterPropertyString('ApplicationId', 'ApplicationId');
         $this->RegisterPropertyString('DeviceId', 'DeviceId');
+        $this->RegisterPropertyBoolean('GetContentFromRawPayload', false);
+        $this->RegisterPropertyBoolean('AutoCreateVariable', false);
 
         $this->RegisterPropertyBoolean('ShowState', false);
         $this->RegisterPropertyInteger('WatchdogTime', 0);
-        $this->ConnectParent('{A6D53032-A228-458C-B023-8C3B1117B73B}');
-
-        $this->RegisterPropertyBoolean('ShowTemperature', false);
-        $this->RegisterPropertyBoolean('ShowHumidity', false);
-        $this->RegisterPropertyBoolean('ShowPressure', false);
-        $this->RegisterPropertyBoolean('ShowBatteryVoltage', false);
-        $this->RegisterPropertyBoolean('ShowSolarVoltage', false);
-        $this->RegisterPropertyBoolean('ShowErrorState', false);
+        $this->ConnectParent('{F7A0DD2E-7684-95C0-64C2-D2A9DC47577B}');
 
         $this->RegisterPropertyBoolean('ShowMeta', false);
         $this->RegisterPropertyBoolean('ShowRssi', false);
@@ -42,18 +37,17 @@ class TtnEnvironmentSensor extends IPSModule
         parent::ApplyChanges();
 
         $this->Maintain();
+
+        //Setze Filter für ReceiveData
+
+        $MQTTTopic = $this->ReadPropertyString('ApplicationId').'/devices/'.$this->ReadPropertyString('DeviceId').'/up';
+        $this->SetReceiveDataFilter('.*'.$MQTTTopic.'.*');
+
         //$this->WatchdogReset();
     }
 
     private function Maintain()
     {
-        $this->MaintainVariable('Temperature', $this->Translate('Temperature'), 2, '~Temperature', 2, $this->ReadPropertyBoolean('ShowTemperature'));
-        $this->MaintainVariable('Humidity', $this->Translate('Humidity'), 2, '~Humidity.F', 2, $this->ReadPropertyBoolean('ShowHumidity'));
-        $this->MaintainVariable('Pressure', $this->Translate('Pressure'), 2, '~AirPressure.F', 2, $this->ReadPropertyBoolean('ShowPressure'));
-        $this->MaintainVariable('BatteryVoltage', $this->Translate('Battery Voltage'), 2, '~Volt', 4, $this->ReadPropertyBoolean('ShowBatteryVoltage'));
-        $this->MaintainVariable('SolarVoltage', $this->Translate('SolarVoltage'), 2, '~Volt', 5, $this->ReadPropertyBoolean('ShowSolarVoltage'));
-        $this->MaintainVariable('ErrorState', $this->Translate('Error State'), 1, '', 6, $this->ReadPropertyBoolean('ShowErrorState'));
-
         $this->MaintainVariable('Meta_Informations', $this->Translate('Meta Informations'), 3, '', 100, $this->ReadPropertyBoolean('ShowMeta'));
         $this->MaintainVariable('Meta_RSSI', $this->Translate('RSSI'), 1, 'TTN_dBm_RSSI', 101, $this->ReadPropertyBoolean('ShowRssi'));
         $this->MaintainVariable('Meta_SNR', $this->Translate('SNR'), 2, 'TTN_dB_SNR', 102, $this->ReadPropertyBoolean('ShowSnr'));
@@ -79,64 +73,9 @@ class TtnEnvironmentSensor extends IPSModule
         }
     }
 
-    public function EnableLogging()
-    {
-        $archiveId = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
-
-        $arr = ['Temperature', 'Humidity', 'Pressure', 'BatteryVoltage', 'SolarVoltage', 'ErrorState',
-            'Meta_Informations', 'Meta_RSSI', 'Meta_SNR', 'Meta_FrameId', 'Meta_GatewayCount', 'State', 'Interval', ];
-
-        foreach ($arr as &$ident) {
-            $id = @$this->GetIDForIdent($ident);
-
-            if ($id == 0) {
-                continue;
-            }
-            AC_SetLoggingStatus($archiveId, $id, true);
-            AC_SetAggregationType($archiveId, $id, 0); // 0 Standard, 1 Zähler
-            AC_SetGraphStatus($archiveId, $id, true);
-        }
-
-        IPS_ApplyChanges($archiveId);
-    }
-
-    public function DisableLogging()
-    {
-        $archiveId = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
-        $arr = ['Temperature', 'Humidity', 'Pressure', 'BatteryVoltage', 'SolarVoltage', 'ErrorState',
-            'Meta_Informations', 'Meta_RSSI', 'Meta_SNR', 'Meta_FrameId', 'Meta_GatewayCount', 'State', 'Interval', ];
-
-        foreach ($arr as &$ident) {
-            $id = $this->GetIDForIdent($ident);
-            if ($id == 0) {
-                continue;
-            }
-            AC_SetLoggingStatus($archiveId, $id, false);
-            AC_SetGraphStatus($archiveId, $id, false);
-        }
-
-        IPS_ApplyChanges($archiveId);
-    }
-
     public function GetData()
     {
         return json_decode($this->GetBuffer('DataBuffer'));
-    }
-
-    public function GetSensorData()
-    {
-        $arr = ['Temperature', 'Humidity', 'Pressure', 'BatteryVoltage', 'SolarVoltage', 'ErrorState', 'State'];
-
-        $data = [];
-        foreach ($arr as &$ident) {
-            if (@$this->GetIDForIdent($ident) != 0) {
-                $data[$ident] = (@$this->GetValue($ident));
-            }
-        }
-
-        $data['Timestamp'] = $this->ReadAttributeInteger('LastMessageTimestamp');
-
-        return $data;
     }
 
     public function GetState()
@@ -147,7 +86,13 @@ class TtnEnvironmentSensor extends IPSModule
     public function ReceiveData($JSONString)
     {
         $data = json_decode($JSONString);
-        $data = $data->Buffer;
+        $this->SendDebug('ReceiveData()', '$JSONString '.$JSONString, 0);
+        $this->SendDebug('ReceiveData() data ', json_encode($data), 0);
+        $data = $data->Payload;
+        $data = json_decode($data);
+        $this->SendDebug('ReceiveData() data->Payload ', json_encode($data), 0);
+        //$data = $data->Payload;
+        //$this->SendDebug('ReceiveData()','data->Buffer->Payload '.$data, 0);
 
         if ($data->app_id != $this->ReadPropertyString('ApplicationId')) {
             return;
@@ -160,41 +105,44 @@ class TtnEnvironmentSensor extends IPSModule
         $this->WatchdogReset();
 
         $this->SendDebug('ReceiveData()', 'Application_ID & Device_ID OK', 0);
-
-        if (property_exists($data, 'payload_fields')) {
-            $elements = $data->payload_fields;
-            $this->SendDebug('ReceiveData()', 'Payload: '.json_encode($elements), 0);
+        if ($this->ReadPropertyBoolean('GetContentFromRawPayload')) {
+            $payload = base64_decode($data->payload_raw);
+            $elements = json_decode($payload);
+            $this->SendDebug('ReceiveData()', 'Payload: '.$payload, 0);
         } else {
-            $elements = null;
-            $this->SendDebug('ReceiveData()', 'Key: payload_fields does not exist', 0);
+            if (property_exists($data, 'payload_fields')) {
+                $elements = $data->payload_fields;
+                $this->SendDebug('ReceiveData()', 'Payload: '.json_encode($elements), 0);
+            } else {
+                $elements = null;
+                $this->SendDebug('ReceiveData()', 'Key: payload_fields does not exist', 0);
+            }
         }
-
         if ($elements == null) {
             $this->SendDebug('ReceiveData()', 'JSON-Decode failed', 0);
         } else {
-            //1 Temperature
-            if ($this->ReadPropertyBoolean('ShowTemperature') && (property_exists($elements, 'temperature_1'))) {
-                $this->SetValue('Temperature', $elements->temperature_1);
-            }
-            //2	Battery Voltege
-            if ($this->ReadPropertyBoolean('ShowBatteryVoltage') && (property_exists($elements, 'analog_in_2'))) {
-                $this->SetValue('BatteryVoltage', $elements->analog_in_2);
-            }
-            //3 Solar Voltage
-            if ($this->ReadPropertyBoolean('ShowSolarVoltage') && (property_exists($elements, 'analog_in_3'))) {
-                $this->SetValue('SolarVoltage', $elements->analog_in_3);
-            }
-            //4 ErrorState
-            if ($this->ReadPropertyBoolean('ShowErrorState') && (property_exists($elements, 'digital_in_4'))) {
-                $this->SetValue('ErrorState', $elements->digital_in_4);
-            }
-            //5 Humidity
-            if ($this->ReadPropertyBoolean('ShowHumidity') && (property_exists($elements, 'relative_humidity_5'))) {
-                $this->SetValue('Humidity', $elements->relative_humidity_5);
-            }
-            //6 Pressure
-            if ($this->ReadPropertyBoolean('ShowPressure') && (property_exists($elements, 'barometric_pressure_6'))) {
-                $this->SetValue('Pressure', $elements->barometric_pressure_6);
+            foreach ($elements as $key => $value) {
+                $this->SendDebug('ReceiveData()', 'Key: '.$key.' Value: '.$value.' Type: '.gettype($value), 0);
+                $id = @$this->GetIDForIdent($key);
+                if ($id == false) {
+                    if (!$this->ReadPropertyBoolean('AutoCreateVariable')) {
+                        continue;
+                    }
+                    $type = gettype($value);
+                    if ($type == 'integer') {
+                        $id = $this->RegisterVariableInteger($key, $key, '', 1);
+                    } elseif ($type == 'boolean') {
+                        $id = $this->RegisterVariableBoolean($key, $key, '', 1);
+                    } elseif ($type == 'string') {
+                        $id = $this->RegisterVariableString($key, $key, '', 1);
+                    } elseif ($type == 'double') {
+                        $id = $this->RegisterVariableFloat($key, $key, '', 1);
+                    } else {
+                        continue;
+                    }
+                }
+
+                SetValue($id, $value);
             }
         }
 
@@ -254,25 +202,12 @@ class TtnEnvironmentSensor extends IPSModule
             }
         }
 
-        if (property_exists($data, 'downlink_url')) {
-            $this->WriteAttributeString('DownlinkUrl', $data->downlink_url);
-        }
-
         $this->WriteAttributeInteger('LastMessageTimestamp', $currentTimestamp);
     }
 
     public function Downlink(int $port, bool $confirmed, string $schedule, string $payload)
     {
         $this->SendDebug('Downlink()', 'Downlink()', 0);
-
-        $url = $this->ReadAttributeString('DownlinkUrl');
-        $this->SendDebug('Downlink() URL', $url, 0);
-
-        if ($url == '') {
-            $this->SendDebug('Downlink()', 'URL empty', 0);
-
-            return false;
-        }
 
         if ($port < 0 || $port > 255) {
             $this->SendDebug('Downlink()', 'Port must be between 0 and 255!', 0);
@@ -303,31 +238,49 @@ class TtnEnvironmentSensor extends IPSModule
             'payload_raw' => $payloadRaw,
         ];
 
-        $postPayload = json_encode($postPayloadArray);
-        $this->SendDebug('Downlink() PostPayload', $postPayload, 0);
-        $curl = curl_init();
+        $Payload = json_encode($postPayloadArray);
+        $this->SendDebug('Downlink() Payload', $Payload, 0);
 
-        curl_setopt_array($curl, [
-            CURLOPT_URL            => $url,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING       => '',
-            CURLOPT_MAXREDIRS      => 10,
-            CURLOPT_TIMEOUT        => 0,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST  => 'POST',
-            CURLOPT_POSTFIELDS     => $postPayload,
-            CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
-            CURLOPT_SAFE_UPLOAD    => true,
-        ]);
+        $MQTTTopic = $this->ReadPropertyString('ApplicationId').'/devices/'.$this->ReadPropertyString('DeviceId').'/down';
+        $this->SendDebug('Downlink() Topic', $MQTTTopic, 0);
+        $result = $this->sendMQTT($MQTTTopic, $Payload);
 
-        $response = curl_exec($curl);
-        $statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-        curl_close($curl);
+        $this->SendDebug('Downlink() Successfull', intval($result), 0);
 
-        $this->SendDebug('Downlink() Statuscode', $statusCode, 0);
+        return $result;
+    }
 
-        return $statusCode == 202;
+    protected function sendMQTT($Topic, $Payload)
+    {
+        $resultServer = true;
+        $resultClient = true;
+        //MQTT Server
+        $Server['DataID'] = '{043EA491-0325-4ADD-8FC2-A30C8EEB4D3F}';
+        $Server['PacketType'] = 3;
+        $Server['QualityOfService'] = 0;
+        $Server['Retain'] = false;
+        $Server['Topic'] = $Topic;
+        $Server['Payload'] = $Payload;
+        $ServerJSON = json_encode($Server, JSON_UNESCAPED_SLASHES);
+        $this->SendDebug('Downlink()'.'MQTT Server', $ServerJSON, 0);
+        $resultServer = @$this->SendDataToParent($ServerJSON);
+
+        //MQTT Client
+        $Buffer['PacketType'] = 3;
+        $Buffer['QualityOfService'] = 0;
+        $Buffer['Retain'] = false;
+        $Buffer['Topic'] = $Topic;
+        $Buffer['Payload'] = $Payload;
+        $BufferJSON = json_encode($Buffer, JSON_UNESCAPED_SLASHES);
+
+        $Client['DataID'] = '{97475B04-67C3-A74D-C970-E9409B0EFA1D}';
+        $Client['Buffer'] = $BufferJSON;
+
+        $ClientJSON = json_encode($Client);
+        $this->SendDebug('Downlink()'.'MQTT Client', $ClientJSON, 0);
+        $resultClient = @$this->SendDataToParent($ClientJSON);
+
+        return $resultServer === false && $resultClient === false;
     }
 
     private function RegisterVariableProfiles()

@@ -1,0 +1,71 @@
+{
+	"elements": [
+		{
+			"type": "Label",
+			"caption": "Wichtig! Durch das Upgrade von TTN auf V3 wird diese Instanz zukünftig nicht mehr unterstützt. Bitte möglichst direkt zu V3 upgraden."
+		},
+		{
+			"type": "Button",
+			"caption": "Weitere Informationen",
+			"onClick": "echo 'https://www.thethingsnetwork.org/forum/t/the-things-network-upgrade-to-v3/43256';"
+		},
+		{
+			"type": "Label",
+			"caption": "Diese Instanz wird nach Abschaltung der alten Plattform entfernt."
+		},
+		{
+			"type": "ValidationTextBox",
+			"name": "ApplicationId",
+			"caption": "Application ID"
+		},
+		{
+			"type": "ValidationTextBox",
+			"name": "DeviceId",
+			"caption": "Device ID"
+		},
+		{
+			"type": "Select",
+			"name": "DataType",
+			"caption": "Type",
+			"options": [
+				{
+					"caption": "String",
+					"value": 0
+				},
+				{
+					"caption": "HEX-String",
+					"value": 1
+				},
+				{
+					"caption": "Boolean",
+					"value": 2
+				},
+				{
+					"caption": "Integer",
+					"value": 3
+				},
+				{
+					"caption": "Float",
+					"value": 4
+				}
+			]
+		},
+		{
+			"type": "CheckBox",
+			"name": "ShowMeta",
+			"caption": "Show Meta Informations"
+		},
+		{
+			"type": "CheckBox",
+			"name": "ShowRssi",
+			"caption": "Show RSSI"
+		},
+		{
+			"type": "CheckBox",
+			"name": "ShowGatewayCount",
+			"caption": "Show Gateway Count"
+		}
+	],
+	"actions": [],
+	"status": []
+}

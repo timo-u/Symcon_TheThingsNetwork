@@ -21,7 +21,6 @@
 			"Meta Informations": "Metadaten",
 			"RSSI": "RSSI",
 			"SNR": "SNR",
-			"Spreading Factor": "Spreizfaktor",
 			"Gateway Count": "Gateway Anzahl",
 			"Auto Create Variables": "Variablen automatisch erstellen",
 			"Get Content From Raw-Payload": "Inhalt aus dem RAW-Payload entnehmen"

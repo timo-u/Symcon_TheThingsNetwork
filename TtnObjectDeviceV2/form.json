@@ -1,6 +1,19 @@
 {
 	"elements": [
 		{
+			"type": "Label",
+			"caption": "Wichtig! Durch das Upgrade von TTN auf V3 wird diese Instanz zukünftig nicht mehr unterstützt. Bitte möglichst direkt zu V3 upgraden."
+		},
+		{
+			"type": "Button",
+			"caption": "Weitere Informationen",
+			"onClick": "echo 'https://www.thethingsnetwork.org/forum/t/the-things-network-upgrade-to-v3/43256';"
+		},
+		{
+			"type": "Label",
+			"caption": "Diese Instanz wird nach Abschaltung der alten Plattform entfernt."
+		},
+		{
 			"type": "ValidationTextBox",
 			"name": "ApplicationId",
 			"caption": "Application ID"

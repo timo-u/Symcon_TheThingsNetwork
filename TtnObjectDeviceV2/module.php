@@ -1,6 +1,6 @@
 <?php
 
-class TtnMqttDevice extends IPSModule
+class TtnObjectDeviceV2 extends IPSModule
 {
     public function Create()
     {
@@ -9,12 +9,12 @@ class TtnMqttDevice extends IPSModule
 
         $this->RegisterPropertyString('ApplicationId', 'ApplicationId');
         $this->RegisterPropertyString('DeviceId', 'DeviceId');
-		$this->RegisterPropertyString('Tenant', 'ttn');
+        $this->RegisterPropertyBoolean('GetContentFromRawPayload', false);
         $this->RegisterPropertyBoolean('AutoCreateVariable', false);
 
         $this->RegisterPropertyBoolean('ShowState', false);
         $this->RegisterPropertyInteger('WatchdogTime', 0);
-        $this->ConnectParent('{F7A0DD2E-7684-95C0-64C2-D2A9DC47577B}');
+        $this->ConnectParent('{A6D53032-A228-458C-B023-8C3B1117B73B}');
 
         $this->RegisterPropertyBoolean('ShowMeta', false);
         $this->RegisterPropertyBoolean('ShowRssi', false);
@@ -32,20 +32,16 @@ class TtnMqttDevice extends IPSModule
 
     public function ApplyChanges()
     {
-     parent::ApplyChanges();
+        //Never delete this line!
+        parent::ApplyChanges();
 
-          $this->Maintain();
-
-        //Setze Filter für ReceiveData
-        $MQTTTopic = "v3/" .$this->ReadPropertyString('ApplicationId')."@" .$this->ReadPropertyString('Tenant').'/devices/'.$this->ReadPropertyString('DeviceId').'/up';
-        $this->SetReceiveDataFilter('.*'.$MQTTTopic.'.*');
-        )
+        $this->Maintain();
+        //$this->WatchdogReset();
     }
 
     private function Maintain()
     {
         $this->MaintainVariable('Meta_Informations', $this->Translate('Meta Informations'), 3, '', 100, $this->ReadPropertyBoolean('ShowMeta'));
-        $this->MaintainVariable('Meta_SpreadingFactor', $this->Translate('Spreading Factor'), 1, 'TTN_spreadingfactor', 100, $this->ReadPropertyBoolean('ShowMeta'));
         $this->MaintainVariable('Meta_RSSI', $this->Translate('RSSI'), 1, 'TTN_dBm_RSSI', 101, $this->ReadPropertyBoolean('ShowRssi'));
         $this->MaintainVariable('Meta_SNR', $this->Translate('SNR'), 2, 'TTN_dB_SNR', 102, $this->ReadPropertyBoolean('ShowSnr'));
         $this->MaintainVariable('Meta_FrameId', $this->Translate('Frame ID'), 1, '', 103, $this->ReadPropertyBoolean('ShowFrame'));
@@ -82,67 +78,47 @@ class TtnMqttDevice extends IPSModule
 
     public function ReceiveData($JSONString)
     {
-		
-		$data = json_decode($JSONString);
-		$data = $data->Payload;
-        $data = json_decode($data);
+        $data = json_decode($JSONString);
+        $data = $data->Buffer;
 
-		// Prüfung ob V2 Stack => Abbruch
-		if (! property_exists($data, 'end_device_ids')) 
-		{	
-			return; 
-		}
-		
-		// Prüfung ob keine Uplink Messsage => Abbruch
-		if (! property_exists($data, 'uplink_message')) 
-		{	
-			return; 
-		}
-		
-		// Prüfung ob die Application-ID passt 
-        if ($data->end_device_ids->application_ids->application_id != $this->ReadPropertyString('ApplicationId')) {
+        if (! property_exists($data, 'app_id')) { // Prüfung ob V3 Stack => Abbruch
             return;
         }
-		
-		// Prüfung die Device-ID passt
-        if ($data->end_device_ids->device_id != $this->ReadPropertyString('DeviceId')) {
+
+        if ($data->app_id != $this->ReadPropertyString('ApplicationId')) {
             return;
         }
-		// Buffer für weitere Anwendungen via TTN_GetData();
+        if ($data->dev_id != $this->ReadPropertyString('DeviceId')) {
+            return;
+        }
         $this->SetBuffer('DataBuffer', json_encode($data));
-		
-		// Zurücksetzen des WatchdogTimers bei Empfang einer Nachricht
+
         $this->WatchdogReset();
 
         $this->SendDebug('ReceiveData()', 'Application_ID & Device_ID OK', 0);
-		
-		// Payload-Elemente auslesen sofern vorhanden
-        if (property_exists($data, 'uplink_message') && property_exists($data->uplink_message, 'decoded_payload')) 
-		{
-               $elements = $data->uplink_message->decoded_payload;
-               $this->SendDebug('ReceiveData()', 'Payload: '.json_encode($elements), 0);
-        } else
-		{
+        if ($this->ReadPropertyBoolean('GetContentFromRawPayload')) {
+            $payload = base64_decode($data->payload_raw);
+            $elements = json_decode($payload);
+            $this->SendDebug('ReceiveData()', 'Payload: '.$payload, 0);
+        } else {
+            if (property_exists($data, 'payload_fields')) {
+                $elements = $data->payload_fields;
+                $this->SendDebug('ReceiveData()', 'Payload: '.json_encode($elements), 0);
+            } else {
                 $elements = null;
-                $this->SendDebug('ReceiveData()', 'Key: uplink_message->decoded_payload does not exist', 0);
+                $this->SendDebug('ReceiveData()', 'Key: payload_fields does not exist', 0);
+            }
         }
-        
-        if ($elements == null) 
-		{
+        if ($elements == null) {
             $this->SendDebug('ReceiveData()', 'JSON-Decode failed', 0);
-        } 
-		else 
-		{
+        } else {
             foreach ($elements as $key => $value) {
                 $this->SendDebug('ReceiveData()', 'Key: '.$key.' Value: '.$value.' Type: '.gettype($value), 0);
-				// Prüfung ob Variable nicht vorhannden
-                if (@$this->GetIDForIdent($key) == false) 
-				{
-					// Bei deaktiviertem AutoCreateVariable deiese Variable überspringen
+                $id = @$this->GetIDForIdent($key);
+                if ($id == false) {
                     if (!$this->ReadPropertyBoolean('AutoCreateVariable')) {
                         continue;
                     }
-					//Variable anlegen
                     $type = gettype($value);
                     if ($type == 'integer') {
                         $id = $this->RegisterVariableInteger($key, $key, '', 1);
@@ -156,84 +132,59 @@ class TtnMqttDevice extends IPSModule
                         continue;
                     }
                 }
-				$this->SetValue($key, $value);
+
+                SetValue($id, $value);
             }
         }
 
         $this->Maintain();
-		
-		// Initialisierungswerte setzten 
+
+        $metadata = $data->metadata;
+
         $rssi = -200;
         $snr = -200;
         $gatewayCount = 0;
-		
-		// Suche nach bestem RSSI und SNR und Zählen der Gateway-Anzahl
-        if (property_exists($data->uplink_message, 'rx_metadata')) {
-            $gateways = $data->uplink_message->rx_metadata;
-            foreach ($gateways as $gateway) 
-			{
-                if ($snr < $gateway->snr) 
-				{
+
+        if (property_exists($metadata, 'gateways')) {
+            $gateways = $metadata->gateways;
+            foreach ($gateways as $gateway) {
+                if ($snr < $gateway->snr) {
                     $snr = $gateway->snr;
                 }
-				
-                if ($rssi < $gateway->rssi) 
-				{
+                if ($rssi < $gateway->rssi) {
                     $rssi = $gateway->rssi;
                 }
-			$this->SendDebug('ReceiveData()', 'Gateway: '.$gateway->gateway_ids->gateway_id . " RSSI: " .$gateway->rssi, 0);	
             }
             $gatewayCount = count($gateways);
         }
-		
         $this->SendDebug('ReceiveData()', 'Best RSSI: '.$rssi, 0);
         $this->SendDebug('ReceiveData()', 'Best SNR: '.$snr, 0);
-		
+        $this->SendDebug('ReceiveData()', 'Frame Counter : '.$data->counter, 0);
 
-        if ($this->ReadPropertyBoolean('ShowMeta')) 
-		{
-            if (property_exists($data->uplink_message, 'settings')) 
-			{
-                $this->SetValue('Meta_Informations', 'Freq: '.$data->uplink_message->settings->frequency/1000000 ." MHz".
-                ' BW: '.$data->uplink_message->settings->data_rate->lora->bandwidth/1000 ." kHz".
-				' Coding Rate: '.$data->uplink_message->settings->coding_rate.
-				' AirTime : ' . $data->uplink_message->consumed_airtime );
-				
-				$this->SetValue('Meta_SpreadingFactor', $data->uplink_message->settings->data_rate->lora->spreading_factor);
-            } 
-			else 
-			{
-                   $this->SetValue('Meta_Informations', 'no data');
+        if ($this->ReadPropertyBoolean('ShowMeta')) {
+            if (property_exists($metadata, 'frequency')) {
+                $this->SetValue('Meta_Informations', 'Freq: '.$metadata->frequency.
+                ' Modulation: '.$metadata->modulation.
+                ' Data Rate: '.$metadata->data_rate.
+                ' Coding Rate: '.$metadata->coding_rate);
+            } else {
+                $this->SetValue('Meta_Informations', 'no data');
             }
         }
 
-        if ($this->ReadPropertyBoolean('ShowRssi')) 
-		{
+        if ($this->ReadPropertyBoolean('ShowRssi')) {
             $this->SetValue('Meta_RSSI', $rssi);
         }
-        if ($this->ReadPropertyBoolean('ShowSnr')) 
-		{
+        if ($this->ReadPropertyBoolean('ShowSnr')) {
             $this->SetValue('Meta_SNR', $snr);
         }
-        if ($this->ReadPropertyBoolean('ShowFrame')) 
-		{
-			if (property_exists($data->uplink_message, 'f_cnt')) // wenn FrameID==0 existiert dieses Feld nicht 
-			{
-				$this->SendDebug('ReceiveData()', 'Frame Counter : '.$data->uplink_message->f_cnt, 0);
-				$this->SetValue('Meta_FrameId', $data->uplink_message->f_cnt);
-			}
-            else
-			{
-				$this->SetValue('Meta_FrameId', 0);
-			}
+        if ($this->ReadPropertyBoolean('ShowFrame')) {
+            $this->SetValue('Meta_FrameId', $data->counter);
         }
-		
-        if ($this->ReadPropertyBoolean('ShowGatewayCount')) 
-		{
+        if ($this->ReadPropertyBoolean('ShowGatewayCount')) {
             $this->SetValue('Meta_GatewayCount', $gatewayCount);
         }
 
-		// Intervall berechnen
         $currentTimestamp = time();
         if ($this->ReadPropertyBoolean('ShowInterval')) {
             $lastTimestamp = $this->ReadAttributeInteger('LastMessageTimestamp');
@@ -241,13 +192,26 @@ class TtnMqttDevice extends IPSModule
                 $this->SetValue('Interval', $currentTimestamp - $lastTimestamp);
             }
         }
-		// Timestamp der letzten Übertragung schreiben. 
+
+        if (property_exists($data, 'downlink_url')) {
+            $this->WriteAttributeString('DownlinkUrl', $data->downlink_url);
+        }
+
         $this->WriteAttributeInteger('LastMessageTimestamp', $currentTimestamp);
     }
 
     public function Downlink(int $port, bool $confirmed, string $schedule, string $payload)
     {
         $this->SendDebug('Downlink()', 'Downlink()', 0);
+
+        $url = $this->ReadAttributeString('DownlinkUrl');
+        $this->SendDebug('Downlink() URL', $url, 0);
+
+        if ($url == '') {
+            $this->SendDebug('Downlink()', 'URL empty', 0);
+
+            return false;
+        }
 
         if ($port < 0 || $port > 255) {
             $this->SendDebug('Downlink()', 'Port must be between 0 and 255!', 0);
@@ -270,58 +234,39 @@ class TtnMqttDevice extends IPSModule
 
         $payloadRaw = base64_encode(hex2bin($payload));
 
-        $downlinks = [
-            'f_port'        => $port,
+        $postPayloadArray = [
+            'dev_id'      => $this->ReadPropertyString('DeviceId'),
+            'port'        => $port,
             'confirmed'   => $confirmed,
-			'priority'   => "NORMAL",
-            'frm_payload' => $payloadRaw,
+            'schedule'    => $schedule,
+            'payload_raw' => $payloadRaw,
         ];
-		$postPayloadArray = [
-            'downlinks'      => Array ($downlinks)
-        ];
-        $Payload = json_encode($postPayloadArray);
-        $this->SendDebug('Downlink() Payload', $Payload, 0);
 
-        $MQTTTopic = "v3/" .$this->ReadPropertyString('ApplicationId')."@" .$this->ReadPropertyString('Tenant').'/devices/'.$this->ReadPropertyString('DeviceId').'/down/push';
-        $this->SendDebug('Downlink() Topic', $MQTTTopic, 0);
-        $result = $this->sendMQTT($MQTTTopic, $Payload);
+        $postPayload = json_encode($postPayloadArray);
+        $this->SendDebug('Downlink() PostPayload', $postPayload, 0);
+        $curl = curl_init();
 
-        $this->SendDebug('Downlink() Successfull', intval($result), 0);
+        curl_setopt_array($curl, [
+            CURLOPT_URL            => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING       => '',
+            CURLOPT_MAXREDIRS      => 10,
+            CURLOPT_TIMEOUT        => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST  => 'POST',
+            CURLOPT_POSTFIELDS     => $postPayload,
+            CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
+            CURLOPT_SAFE_UPLOAD    => true,
+        ]);
 
-        return $result;
-    }
+        $response = curl_exec($curl);
+        $statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        curl_close($curl);
 
-    protected function sendMQTT($Topic, $Payload)
-    {
-        $resultServer = true;
-        $resultClient = true;
-        //MQTT Server
-        $Server['DataID'] = '{043EA491-0325-4ADD-8FC2-A30C8EEB4D3F}';
-        $Server['PacketType'] = 3;
-        $Server['QualityOfService'] = 0;
-        $Server['Retain'] = false;
-        $Server['Topic'] = $Topic;
-        $Server['Payload'] = $Payload;
-        $ServerJSON = json_encode($Server, JSON_UNESCAPED_SLASHES);
-        $this->SendDebug('Downlink()'.'MQTT Server', $ServerJSON, 0);
-        $resultServer = @$this->SendDataToParent($ServerJSON);
+        $this->SendDebug('Downlink() Statuscode', $statusCode, 0);
 
-        //MQTT Client
-        $Buffer['PacketType'] = 3;
-        $Buffer['QualityOfService'] = 0;
-        $Buffer['Retain'] = false;
-        $Buffer['Topic'] = $Topic;
-        $Buffer['Payload'] = $Payload;
-        $BufferJSON = json_encode($Buffer, JSON_UNESCAPED_SLASHES);
-
-        $Client['DataID'] = '{97475B04-67C3-A74D-C970-E9409B0EFA1D}';
-        $Client['Buffer'] = $BufferJSON;
-
-        $ClientJSON = json_encode($Client);
-        $this->SendDebug('Downlink()'.'MQTT Client', $ClientJSON, 0);
-        $resultClient = @$this->SendDataToParent($ClientJSON);
-
-        return $resultServer === false && $resultClient === false;
+        return $statusCode == 202;
     }
 
     private function RegisterVariableProfiles()
@@ -348,10 +293,6 @@ class TtnMqttDevice extends IPSModule
         if (!IPS_VariableProfileExists('TTN_second')) {
             IPS_CreateVariableProfile('TTN_second', 1);
             IPS_SetVariableProfileText('TTN_second', '', ' s');
-        }
-		if (!IPS_VariableProfileExists('TTN_spreadingfactor')) {
-            IPS_CreateVariableProfile('TTN_spreadingfactor', 1);
-            IPS_SetVariableProfileText('TTN_spreadingfactor', 'SF', '');
         }
     }
 }

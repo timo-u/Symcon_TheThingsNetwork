@@ -1,7 +1,5 @@
 <?php
-
-declare(strict_types=1);
-class TtnObjectDevice extends IPSModule
+class TtnEnvironmentSensorV2 extends IPSModule
 {
     public function Create()
     {
@@ -10,12 +8,17 @@ class TtnObjectDevice extends IPSModule
 
         $this->RegisterPropertyString('ApplicationId', 'ApplicationId');
         $this->RegisterPropertyString('DeviceId', 'DeviceId');
-        $this->RegisterPropertyBoolean('GetContentFromRawPayload', false);
-        $this->RegisterPropertyBoolean('AutoCreateVariable', false);
 
         $this->RegisterPropertyBoolean('ShowState', false);
         $this->RegisterPropertyInteger('WatchdogTime', 0);
         $this->ConnectParent('{A6D53032-A228-458C-B023-8C3B1117B73B}');
+
+        $this->RegisterPropertyBoolean('ShowTemperature', false);
+        $this->RegisterPropertyBoolean('ShowHumidity', false);
+        $this->RegisterPropertyBoolean('ShowPressure', false);
+        $this->RegisterPropertyBoolean('ShowBatteryVoltage', false);
+        $this->RegisterPropertyBoolean('ShowSolarVoltage', false);
+        $this->RegisterPropertyBoolean('ShowErrorState', false);
 
         $this->RegisterPropertyBoolean('ShowMeta', false);
         $this->RegisterPropertyBoolean('ShowRssi', false);
@@ -42,6 +45,13 @@ class TtnObjectDevice extends IPSModule
 
     private function Maintain()
     {
+        $this->MaintainVariable('Temperature', $this->Translate('Temperature'), 2, '~Temperature', 2, $this->ReadPropertyBoolean('ShowTemperature'));
+        $this->MaintainVariable('Humidity', $this->Translate('Humidity'), 2, '~Humidity.F', 2, $this->ReadPropertyBoolean('ShowHumidity'));
+        $this->MaintainVariable('Pressure', $this->Translate('Pressure'), 2, '~AirPressure.F', 2, $this->ReadPropertyBoolean('ShowPressure'));
+        $this->MaintainVariable('BatteryVoltage', $this->Translate('Battery Voltage'), 2, '~Volt', 4, $this->ReadPropertyBoolean('ShowBatteryVoltage'));
+        $this->MaintainVariable('SolarVoltage', $this->Translate('SolarVoltage'), 2, '~Volt', 5, $this->ReadPropertyBoolean('ShowSolarVoltage'));
+        $this->MaintainVariable('ErrorState', $this->Translate('Error State'), 1, '', 6, $this->ReadPropertyBoolean('ShowErrorState'));
+
         $this->MaintainVariable('Meta_Informations', $this->Translate('Meta Informations'), 3, '', 100, $this->ReadPropertyBoolean('ShowMeta'));
         $this->MaintainVariable('Meta_RSSI', $this->Translate('RSSI'), 1, 'TTN_dBm_RSSI', 101, $this->ReadPropertyBoolean('ShowRssi'));
         $this->MaintainVariable('Meta_SNR', $this->Translate('SNR'), 2, 'TTN_dB_SNR', 102, $this->ReadPropertyBoolean('ShowSnr'));
@@ -67,9 +77,64 @@ class TtnObjectDevice extends IPSModule
         }
     }
 
+    public function EnableLogging()
+    {
+        $archiveId = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
+
+        $arr = ['Temperature', 'Humidity', 'Pressure', 'BatteryVoltage', 'SolarVoltage', 'ErrorState',
+            'Meta_Informations', 'Meta_RSSI', 'Meta_SNR', 'Meta_FrameId', 'Meta_GatewayCount', 'State', 'Interval', ];
+
+        foreach ($arr as &$ident) {
+            $id = @$this->GetIDForIdent($ident);
+
+            if ($id == 0) {
+                continue;
+            }
+            AC_SetLoggingStatus($archiveId, $id, true);
+            AC_SetAggregationType($archiveId, $id, 0); // 0 Standard, 1 Zähler
+            AC_SetGraphStatus($archiveId, $id, true);
+        }
+
+        IPS_ApplyChanges($archiveId);
+    }
+
+    public function DisableLogging()
+    {
+        $archiveId = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
+        $arr = ['Temperature', 'Humidity', 'Pressure', 'BatteryVoltage', 'SolarVoltage', 'ErrorState',
+            'Meta_Informations', 'Meta_RSSI', 'Meta_SNR', 'Meta_FrameId', 'Meta_GatewayCount', 'State', 'Interval', ];
+
+        foreach ($arr as &$ident) {
+            $id = $this->GetIDForIdent($ident);
+            if ($id == 0) {
+                continue;
+            }
+            AC_SetLoggingStatus($archiveId, $id, false);
+            AC_SetGraphStatus($archiveId, $id, false);
+        }
+
+        IPS_ApplyChanges($archiveId);
+    }
+
     public function GetData()
     {
         return json_decode($this->GetBuffer('DataBuffer'));
+    }
+
+    public function GetSensorData()
+    {
+        $arr = ['Temperature', 'Humidity', 'Pressure', 'BatteryVoltage', 'SolarVoltage', 'ErrorState', 'State'];
+
+        $data = [];
+        foreach ($arr as &$ident) {
+            if (@$this->GetIDForIdent($ident) != 0) {
+                $data[$ident] = (@$this->GetValue($ident));
+            }
+        }
+
+        $data['Timestamp'] = $this->ReadAttributeInteger('LastMessageTimestamp');
+
+        return $data;
     }
 
     public function GetState()
@@ -81,7 +146,9 @@ class TtnObjectDevice extends IPSModule
     {
         $data = json_decode($JSONString);
         $data = $data->Buffer;
-
+        if (! property_exists($data, 'app_id')) { // Prüfung ob V3 Stack => Abbruch
+            return;
+        }
         if ($data->app_id != $this->ReadPropertyString('ApplicationId')) {
             return;
         }
@@ -93,44 +160,41 @@ class TtnObjectDevice extends IPSModule
         $this->WatchdogReset();
 
         $this->SendDebug('ReceiveData()', 'Application_ID & Device_ID OK', 0);
-        if ($this->ReadPropertyBoolean('GetContentFromRawPayload')) {
-            $payload = base64_decode($data->payload_raw);
-            $elements = json_decode($payload);
-            $this->SendDebug('ReceiveData()', 'Payload: '.$payload, 0);
+
+        if (property_exists($data, 'payload_fields')) {
+            $elements = $data->payload_fields;
+            $this->SendDebug('ReceiveData()', 'Payload: '.json_encode($elements), 0);
         } else {
-            if (property_exists($data, 'payload_fields')) {
-                $elements = $data->payload_fields;
-                $this->SendDebug('ReceiveData()', 'Payload: '.json_encode($elements), 0);
-            } else {
-                $elements = null;
-                $this->SendDebug('ReceiveData()', 'Key: payload_fields does not exist', 0);
-            }
+            $elements = null;
+            $this->SendDebug('ReceiveData()', 'Key: payload_fields does not exist', 0);
         }
+
         if ($elements == null) {
             $this->SendDebug('ReceiveData()', 'JSON-Decode failed', 0);
         } else {
-            foreach ($elements as $key => $value) {
-                $this->SendDebug('ReceiveData()', 'Key: '.$key.' Value: '.$value.' Type: '.gettype($value), 0);
-                $id = @$this->GetIDForIdent($key);
-                if ($id == false) {
-                    if (!$this->ReadPropertyBoolean('AutoCreateVariable')) {
-                        continue;
-                    }
-                    $type = gettype($value);
-                    if ($type == 'integer') {
-                        $id = $this->RegisterVariableInteger($key, $key, '', 1);
-                    } elseif ($type == 'boolean') {
-                        $id = $this->RegisterVariableBoolean($key, $key, '', 1);
-                    } elseif ($type == 'string') {
-                        $id = $this->RegisterVariableString($key, $key, '', 1);
-                    } elseif ($type == 'double') {
-                        $id = $this->RegisterVariableFloat($key, $key, '', 1);
-                    } else {
-                        continue;
-                    }
-                }
-
-                SetValue($id, $value);
+            //1 Temperature
+            if ($this->ReadPropertyBoolean('ShowTemperature') && (property_exists($elements, 'temperature_1'))) {
+                $this->SetValue('Temperature', $elements->temperature_1);
+            }
+            //2	Battery Voltege
+            if ($this->ReadPropertyBoolean('ShowBatteryVoltage') && (property_exists($elements, 'analog_in_2'))) {
+                $this->SetValue('BatteryVoltage', $elements->analog_in_2);
+            }
+            //3 Solar Voltage
+            if ($this->ReadPropertyBoolean('ShowSolarVoltage') && (property_exists($elements, 'analog_in_3'))) {
+                $this->SetValue('SolarVoltage', $elements->analog_in_3);
+            }
+            //4 ErrorState
+            if ($this->ReadPropertyBoolean('ShowErrorState') && (property_exists($elements, 'digital_in_4'))) {
+                $this->SetValue('ErrorState', $elements->digital_in_4);
+            }
+            //5 Humidity
+            if ($this->ReadPropertyBoolean('ShowHumidity') && (property_exists($elements, 'relative_humidity_5'))) {
+                $this->SetValue('Humidity', $elements->relative_humidity_5);
+            }
+            //6 Pressure
+            if ($this->ReadPropertyBoolean('ShowPressure') && (property_exists($elements, 'barometric_pressure_6'))) {
+                $this->SetValue('Pressure', $elements->barometric_pressure_6);
             }
         }
 

@@ -1,25 +1,24 @@
 {
 	"translations": {
-    "de": {
-      "Gateway ID": "Gateway ID",
-      "uplink messages": "Empfangene Nachrichten",
-      "downlink messages": "Gesendete Nachrichten",
-      "last seen bevore": "Verbunden vor",
-      "online": "Online",
-      "Update Interval": "Aktualisierungs-Intervall",
-      "Connection Warning": "Verbindungswarnung",
-	  "Enable Logging": "Logging Aktivieren",
-	  "Disable Logging": "Logging Deaktivieren",
-	  "60 seconds" : "60 Sekunden",
-	  "2 minutes" : "2 Minuten",
-	  "5 minutes" : "5 Minuten",
-	  "10 minutes" : "10 Minuten",
-	  "15 minutes" : "15 Minuten",
-	  "30 minutes" : "30 Minuten",
-	  "1 hour" : "1 Stunde",
-	  "Invalid Gateway ID" : "Ungültige Gateway ID",
-	  "Update": "Aktualisiern"
-	  
-    }
+		"de": {
+			"Gateway ID": "Gateway ID",
+			"uplink messages": "Empfangene Nachrichten",
+			"downlink messages": "Gesendete Nachrichten",
+			"last seen bevore": "Verbunden vor",
+			"online": "Online",
+			"Update Interval": "Aktualisierungs-Intervall",
+			"Connection Warning": "Verbindungswarnung",
+			"Enable Logging": "Logging Aktivieren",
+			"Disable Logging": "Logging Deaktivieren",
+			"60 seconds": "60 Sekunden",
+			"2 minutes": "2 Minuten",
+			"5 minutes": "5 Minuten",
+			"10 minutes": "10 Minuten",
+			"15 minutes": "15 Minuten",
+			"30 minutes": "30 Minuten",
+			"1 hour": "1 Stunde",
+			"Invalid Gateway ID": "Ungültige Gateway ID",
+			"Update": "Aktualisiern"
+		}
 	}
 }

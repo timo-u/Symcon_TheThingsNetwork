@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 class TtnGateway extends IPSModule
 {
     public function Create()

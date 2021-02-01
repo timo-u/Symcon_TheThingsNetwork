@@ -1,4 +1,7 @@
-### TTN Object Device
+### TTN MQTT Device
+
+Diese Instanz verbindet sich mit TTN via MQTT. 
+Hierfür muss für jede "Application" in TTN ein eigener MQTT-Client mit Client-Socket erstellt werden. 
 
 Nimmt den Payload der Nachticht als JSON entgegen und legt automatisch die Variablen an.
  

@@ -1,10 +1,10 @@
 {
-	"id": "{FF6D63B4-E6C1-C76C-5CDD-626847F3B3FA}",
-	"name": "TtnMqttDevice",
+	"id": "{C2EC133E-B3BD-D6C5-0813-CA314829CF0D}",
+	"name": "TtnMqttDeviceV2",
 	"type": 3,
 	"vendor": "The Things Network",
 	"aliases": [
-		"TTN MQTT Device (V3)"
+		"TTN MQTT Device V2"
 	],
 	"parentRequirements": [
 		"{043EA491-0325-4ADD-8FC2-A30C8EEB4D3F}",

@@ -1,10 +1,10 @@
 {
-	"id": "{7EC18F89-5FDD-6BB3-EA57-F3F012E429FA}",
-	"name": "TtnDevice",
+	"id": "{841F0130-4ED6-89FA-7DFD-5226A54C4311}",
+	"name": "TtnEnvironmentSensorV2",
 	"type": 3,
 	"vendor": "The Things Network",
 	"aliases": [
-		"TTN Device (V3)"
+		"TTN Environment Sensor V2"
 	],
 	"parentRequirements": [
 		"{345C55AB-5EAF-4A69-8B24-93B97629CD09}"
