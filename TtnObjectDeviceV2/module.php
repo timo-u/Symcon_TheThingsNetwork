@@ -113,7 +113,7 @@ class TtnObjectDeviceV2 extends IPSModule
             $this->SendDebug('ReceiveData()', 'JSON-Decode failed', 0);
         } else {
             foreach ($elements as $key => $value) {
-                $this->SendDebug('ReceiveData()', 'Key: '.$key.' Value: '.$value.' Type: '.gettype($value), 0);
+                $this->SendDebug('ReceiveData()', 'Key: '.$key.' Value: '.print_r($value,true).' Type: '.gettype($value), 0);
                 $id = @$this->GetIDForIdent($key);
                 if ($id == false) {
                     if (!$this->ReadPropertyBoolean('AutoCreateVariable')) {

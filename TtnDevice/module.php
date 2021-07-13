@@ -120,7 +120,7 @@ class TtnDevice extends IPSModule
             $this->SendDebug('ReceiveData()', 'JSON-Decode failed', 0);
         } else {
             foreach ($elements as $key => $value) {
-                $this->SendDebug('ReceiveData()', 'Key: ' . $key . ' Value: ' . $value . ' Type: ' . gettype($value), 0);
+                $this->SendDebug('ReceiveData()', 'Key: ' . $key . ' Value: ' . print_r($value,true) . ' Type: ' . gettype($value), 0);
                 // Prüfung ob Variable nicht vorhannden
                 if (@$this->GetIDForIdent($key) == false) {
                     // Bei deaktiviertem AutoCreateVariable deiese Variable überspringen
