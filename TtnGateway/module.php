@@ -108,6 +108,7 @@ class TtnGateway extends IPSModule
 		if ($statusCode == 403) {
             $this->SetStatus(203);
             $this->SendDebug('Update() ', 'Forbidden', 0);
+			$this->SendDebug('Update() ', 'Invalid gateway ID?', 0);
         }
 		
 		if ($statusCode == 401) {
