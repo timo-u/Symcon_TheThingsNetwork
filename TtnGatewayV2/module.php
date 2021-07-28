@@ -7,10 +7,9 @@ class TtnGateway extends IPSModule
         //Never delete this line!
         parent::Create();
 
-        $this->RegisterPropertyString('GatewayId', 'ffffffffffffffff');
+        $this->RegisterPropertyString('GatewayId', 'eui-ffffffffffffffff');
         $this->RegisterPropertyInteger('UpdateInterval', 120);
         $this->RegisterPropertyInteger('ConnectionWarningInterval', 900);
-		$this->RegisterPropertyString('ApiKey', 'xxx');
         $this->RegisterTimer('Update', $this->ReadPropertyInteger('UpdateInterval') * 1000, 'TTN_Update($_IPS[\'TARGET\']);');
         $this->RegisterVariableProfiles();
 
@@ -72,29 +71,25 @@ class TtnGateway extends IPSModule
     public function Update()
     {
         $eui = strtolower($this->ReadPropertyString('GatewayId'));
-        if ($eui == '') {
-            $this->SendDebug('Update()', 'empty gateway ID ', 0);
+        if ($eui == 'eui-ffffffffffffffff') {
+            $this->SendDebug('Update()', '$eui == eui-ffffffffffffffff (request stopped) ', 0);
+
             return;
         }
-		
-		$apikey = $this->ReadPropertyString('ApiKey');
-		
+        $url = 'http://noc.thethingsnetwork.org:8085/api/v2/gateways/'.$eui;
+
         $curl = curl_init();
 
-       
-
-		curl_setopt_array($curl, array(
-          CURLOPT_URL => 'https://eu1.cloud.thethings.network/api/v3/gs/gateways/'.$eui.'/connection/stats',
-          CURLOPT_RETURNTRANSFER => true,
-          CURLOPT_ENCODING => '',
-          CURLOPT_MAXREDIRS => 10,
-          CURLOPT_TIMEOUT => 0,
-          CURLOPT_FOLLOWLOCATION => true,
-          CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-          CURLOPT_CUSTOMREQUEST => 'GET',
-          CURLOPT_HTTPHEADER => array(
-                    'Authorization: Bearer '.$apikey),
-		));
+        curl_setopt_array($curl, [
+            CURLOPT_URL            => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING       => '',
+            CURLOPT_MAXREDIRS      => 10,
+            CURLOPT_TIMEOUT        => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST  => 'GET',
+        ]);
 
         $content = curl_exec($curl);
         $statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
@@ -104,81 +99,47 @@ class TtnGateway extends IPSModule
         $this->SendDebug('Update() Content: ', $content, 0);
         $this->SendDebug('Update() HTTP statusCode: ', $statusCode, 0);
 
-		
-		if ($statusCode == 403) {
-            $this->SetStatus(203);
-            $this->SendDebug('Update() ', 'Forbidden', 0);
-        }
-		
-		if ($statusCode == 401) {
+        if ($statusCode == 404) {
             $this->SetStatus(201);
-            $this->SendDebug('Update() ', 'API-Key not found', 0); 
-        }
-		if ($statusCode == 400) {
-            $this->SetStatus(202);
-            $this->SendDebug('Update() ', 'Invalid Token', 0);
+            $this->SendDebug('Update() ', 'Status not found. Invalid Gateway ID?', 0);
+
+            return;
         }
 
-        
+        if ($statusCode != 200) {
+            return;
+        }
 
         $data = json_decode((string) $content);
 
         if ($data == null) {
             $this->SendDebug('Update()', '$data==null', 0);
+
             return;
         }
-		
-		if (property_exists($data, 'message')) 
-		{
-			$this->SendDebug('Message:', $data->message, 0);
-        }
-
-		if ($statusCode != 200) 
-		{
-            return;
-        }
-
 
         $this->SendDebug('Update()', 'content: '.$content, 0);
 
-		$this->MaintainVariable('online', $this->Translate('Online'), 0, 'TTN_Online', 1, 1);
-		$this->MaintainVariable('uplink', $this->Translate('Online'), 1, '', 1, 1);
-		$this->MaintainVariable('downlink', $this->Translate('Online'), 1, '', 1, 1);
-		$this->MaintainVariable('lastseenbevore', $this->Translate('Online'), 1, 'TTN_second', 1, 1);
-			
-			
-        if (property_exists($data, 'uplink_count')) 
-		{
-            $this->SetValue('uplink', $data->uplink_count);
+        $cutrentdate = new DateTime('now');
+        $currentTimestamp = $cutrentdate->getTimestamp();
+        $GwTimeStamp = (int) (($data->time) / 1000000000);
+        $difference = ($currentTimestamp - $GwTimeStamp);
+
+        $this->MaintainVariable('online', $this->Translate('Online'), 0, 'TTN_Online', 1, 1);
+        $this->MaintainVariable('uplink', $this->Translate('Online'), 1, '', 1, 1);
+        $this->MaintainVariable('downlink', $this->Translate('Online'), 1, '', 1, 1);
+        $this->MaintainVariable('lastseenbevore', $this->Translate('Online'), 1, 'TTN_second', 1, 1);
+
+        $this->SetValue('online', $difference < $this->ReadPropertyInteger('ConnectionWarningInterval'));
+
+        if (property_exists($data, 'uplink')) {
+            $this->SetValue('uplink', $data->uplink);
         }
-        if (property_exists($data, 'downlink_count')) 
-		{
-            $this->SetValue('downlink', $data->downlink_count);
+        if (property_exists($data, 'downlink')) {
+            $this->SetValue('downlink', $data->downlink);
         }
-			
-		if (property_exists($data, 'last_uplink_received_at')) 
-		{
-			$cutrentdate = new DateTime('now');
-		
-			$gwLastUplink = $data->last_uplink_received_at;
-			$gwLastUplink = str_replace("T", " ",$gwLastUplink );
-			$gwLastUplink = substr($gwLastUplink,0,27);
-			$GwTimeStamp = new DateTime($gwLastUplink,new \DateTimeZone("UTC"));
-		
-			$this->SendDebug('$cutrentdate', date_format($cutrentdate, 'Y-m-d H:i:s'), 0);
-			$this->SendDebug('last_status_received_at', date_format($GwTimeStamp, 'Y-m-d H:i:s'), 0);
-		
-			$difference = ($cutrentdate->getTimestamp() - $GwTimeStamp->getTimestamp());
-		
-			$this->SetValue('online', $difference < $this->ReadPropertyInteger('ConnectionWarningInterval'));
-			$this->SetValue('lastseenbevore', $difference);
-			
-			$this->SetStatus(102);
-		}
-		
-		
-        
-        
+        $this->SetValue('lastseenbevore', $difference);
+        $this->SetStatus(102);
     }
 
     private function RegisterVariableProfiles()

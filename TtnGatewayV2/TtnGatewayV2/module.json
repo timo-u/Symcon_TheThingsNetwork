@@ -1,10 +1,10 @@
 {
-	"id": "{09D048F7-0BF4-451A-BD79-EE2237E5CACB}",
-	"name": "TtnGateway",
+	"id": "{5240FB96-75E6-5C67-FBBA-182EB57FE73B}",
+	"name": "TtnGatewayV2",
 	"type": 3,
 	"vendor": "The Things Network",
 	"aliases": [
-		"TTN Gateway V3"
+		"TTN Gateway V2"
 	],
 	"parentRequirements": [],
 	"childRequirements": [],

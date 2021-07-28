@@ -5,11 +5,6 @@
       "name": "GatewayId",
       "caption": "Gateway ID"
     },
-	{
-      "type": "ValidationTextBox",
-      "name": "ApiKey",
-      "caption": "API Key"
-    },
     {
       "type": "Select",
       "name": "UpdateInterval",
@@ -118,17 +113,7 @@
     {
       "code": 201,
       "icon": "error",
-      "caption": "API key not found"
-    },
-	 {
-      "code": 202,
-      "icon": "error",
-      "caption": "Invalid Token"
-    },
-	 {
-      "code": 203,
-      "icon": "error",
-      "caption": "Forbidden"
+      "caption": "Invalid Gateway ID"
     }
   ]
 }
