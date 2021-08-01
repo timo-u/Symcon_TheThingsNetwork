@@ -125,11 +125,8 @@ class TtnGateway extends IPSModule
         $GwTimeStamp = (int) (($data->time) / 1000000000);
         $difference = ($currentTimestamp - $GwTimeStamp);
 
-        $this->MaintainVariable('online', $this->Translate('Online'), 0, 'TTN_Online', 1, 1);
-        $this->MaintainVariable('uplink', $this->Translate('Online'), 1, '', 1, 1);
-        $this->MaintainVariable('downlink', $this->Translate('Online'), 1, '', 1, 1);
-        $this->MaintainVariable('lastseenbevore', $this->Translate('Online'), 1, 'TTN_second', 1, 1);
-
+		$this->MaintainVariables();
+		
         $this->SetValue('online', $difference < $this->ReadPropertyInteger('ConnectionWarningInterval'));
 
         if (property_exists($data, 'uplink')) {
@@ -142,19 +139,39 @@ class TtnGateway extends IPSModule
         $this->SetStatus(102);
     }
 
+	private function MaintainVariables()
+    {
+		$this->MaintainVariable('online', $this->Translate('Online'), 0, 'TTN_Online', 1, 1);
+		$this->MaintainVariable('uplink', $this->Translate('uplink messages'), 1, 'TTN_uplink', 1, 1);
+		$this->MaintainVariable('downlink', $this->Translate('downlink messages'), 1, 'TTN_downlink', 1, 1);
+		$this->MaintainVariable('lastseenbevore', $this->Translate('last seen bevore'), 1, 'TTN_second', 1, 1);
+	}
+	
+
     private function RegisterVariableProfiles()
     {
         $this->SendDebug('RegisterVariableProfiles()', 'RegisterVariableProfiles()', 0);
 
         if (!IPS_VariableProfileExists('TTN_Online')) {
             IPS_CreateVariableProfile('TTN_Online', 0);
-            IPS_SetVariableProfileAssociation('TTN_Online', 0, $this->Translate('Offline'), '', 0xFF0000);
-            IPS_SetVariableProfileAssociation('TTN_Online', 1, $this->Translate('Online'), '', 0x00FF00);
+            IPS_SetVariableProfileAssociation('TTN_Online', 0, $this->Translate('Offline'), 'Cross', 0xFF0000);
+            IPS_SetVariableProfileAssociation('TTN_Online', 1, $this->Translate('Online'), 'Ok', 0x00FF00);
         }
 
         if (!IPS_VariableProfileExists('TTN_second')) {
             IPS_CreateVariableProfile('TTN_second', 1);
             IPS_SetVariableProfileText('TTN_second', '', ' s');
+			IPS_SetVariableProfileIcon("TTN_second",  "Clock");
+        }
+		if (!IPS_VariableProfileExists('TTN_uplink')) {
+            IPS_CreateVariableProfile('TTN_uplink', 1);
+            IPS_SetVariableProfileText('TTN_uplink', '', '');
+			IPS_SetVariableProfileIcon("TTN_uplink",  "HollowArrowUp");
+        }
+		if (!IPS_VariableProfileExists('TTN_downlink')) {
+            IPS_CreateVariableProfile('TTN_downlink', 1);
+            IPS_SetVariableProfileText('TTN_downlink', '', '');
+			IPS_SetVariableProfileIcon("TTN_downlink",  "HollowLargeArrowDown");
         }
     }
 }

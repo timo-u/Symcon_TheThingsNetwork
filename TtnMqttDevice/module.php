@@ -172,12 +172,13 @@ class TtnMqttDevice extends IPSModule
             $gateways = $data->uplink_message->rx_metadata;
             foreach ($gateways as $gateway) 
 			{
-                if ($snr < $gateway->snr) 
+				
+                if (property_exists($gateway, 'snr')  && $snr < $gateway->snr) 
 				{
                     $snr = $gateway->snr;
                 }
 				
-                if ($rssi < $gateway->rssi) 
+                if (property_exists($gateway, 'rssi')  && $rssi < $gateway->rssi) 
 				{
                     $rssi = $gateway->rssi;
                 }

@@ -14,10 +14,10 @@ class TtnGateway extends IPSModule
         $this->RegisterTimer('Update', $this->ReadPropertyInteger('UpdateInterval') * 1000, 'TTN_Update($_IPS[\'TARGET\']);');
         $this->RegisterVariableProfiles();
 
-        $this->RegisterVariableInteger('uplink', $this->Translate('uplink messages'), '', 1);
-        $this->RegisterVariableInteger('downlink', $this->Translate('downlink messages'), '', 2);
+        $this->RegisterVariableInteger('uplink', $this->Translate('uplink messages'), 'TTN_uplink', 1);
+        $this->RegisterVariableInteger('downlink', $this->Translate('downlink messages'), 'TTN_downlink', 2);
         $this->RegisterVariableInteger('lastseenbevore', $this->Translate('last seen bevore'), 'TTN_second', 3);
-        $this->RegisterVariableBoolean('online', $this->Translate('online'), '', 4);
+        $this->RegisterVariableBoolean('online', $this->Translate('online'), 'TTN_Online', 4);
     }
 
     public function ApplyChanges()
@@ -71,6 +71,8 @@ class TtnGateway extends IPSModule
 
     public function Update()
     {
+		$this->MaintainVariables();
+		
         $eui = strtolower($this->ReadPropertyString('GatewayId'));
         if ($eui == '') {
             $this->SendDebug('Update()', 'empty gateway ID ', 0);
@@ -103,7 +105,14 @@ class TtnGateway extends IPSModule
 
         $this->SendDebug('Update() Content: ', $content, 0);
         $this->SendDebug('Update() HTTP statusCode: ', $statusCode, 0);
-
+		
+		if ($statusCode == 404) {
+            $this->SetStatus(102);
+            $this->SendDebug('Update() ', 'Not connected', 0);
+			 $this->SetValue('uplink', 0);
+			 $this->SetValue('downlink', 0);
+			 $this->SetValue('online', false);
+        }
 		
 		if ($statusCode == 403) {
             $this->SetStatus(203);
@@ -142,11 +151,6 @@ class TtnGateway extends IPSModule
 
         $this->SendDebug('Update()', 'content: '.$content, 0);
 
-		$this->MaintainVariable('online', $this->Translate('Online'), 0, 'TTN_Online', 1, 1);
-		$this->MaintainVariable('uplink', $this->Translate('Online'), 1, '', 1, 1);
-		$this->MaintainVariable('downlink', $this->Translate('Online'), 1, '', 1, 1);
-		$this->MaintainVariable('lastseenbevore', $this->Translate('Online'), 1, 'TTN_second', 1, 1);
-			
 			
         if (property_exists($data, 'uplink_count')) 
 		{
@@ -181,6 +185,15 @@ class TtnGateway extends IPSModule
         
         
     }
+	
+	private function MaintainVariables()
+    {
+		$this->MaintainVariable('online', $this->Translate('Online'), 0, 'TTN_Online', 1, 1);
+		$this->MaintainVariable('uplink', $this->Translate('uplink messages'), 1, 'TTN_uplink', 1, 1);
+		$this->MaintainVariable('downlink', $this->Translate('downlink messages'), 1, 'TTN_downlink', 1, 1);
+		$this->MaintainVariable('lastseenbevore', $this->Translate('last seen bevore'), 1, 'TTN_second', 1, 1);
+	}
+	
 
     private function RegisterVariableProfiles()
     {
@@ -188,13 +201,24 @@ class TtnGateway extends IPSModule
 
         if (!IPS_VariableProfileExists('TTN_Online')) {
             IPS_CreateVariableProfile('TTN_Online', 0);
-            IPS_SetVariableProfileAssociation('TTN_Online', 0, $this->Translate('Offline'), '', 0xFF0000);
-            IPS_SetVariableProfileAssociation('TTN_Online', 1, $this->Translate('Online'), '', 0x00FF00);
+            IPS_SetVariableProfileAssociation('TTN_Online', 0, $this->Translate('Offline'), 'Cross', 0xFF0000);
+            IPS_SetVariableProfileAssociation('TTN_Online', 1, $this->Translate('Online'), 'Ok', 0x00FF00);
         }
 
         if (!IPS_VariableProfileExists('TTN_second')) {
             IPS_CreateVariableProfile('TTN_second', 1);
             IPS_SetVariableProfileText('TTN_second', '', ' s');
+			IPS_SetVariableProfileIcon("TTN_second",  "Clock");
+        }
+		if (!IPS_VariableProfileExists('TTN_uplink')) {
+            IPS_CreateVariableProfile('TTN_uplink', 1);
+            IPS_SetVariableProfileText('TTN_uplink', '', '');
+			IPS_SetVariableProfileIcon("TTN_uplink",  "HollowArrowUp");
+        }
+		if (!IPS_VariableProfileExists('TTN_downlink')) {
+            IPS_CreateVariableProfile('TTN_downlink', 1);
+            IPS_SetVariableProfileText('TTN_downlink', '', '');
+			IPS_SetVariableProfileIcon("TTN_downlink",  "HollowLargeArrowDown");
         }
     }
 }
