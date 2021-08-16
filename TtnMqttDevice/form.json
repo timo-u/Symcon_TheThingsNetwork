@@ -60,6 +60,11 @@
 			"type": "CheckBox",
 			"name": "ShowInterval",
 			"caption": "Show Interval"
+		},
+		{
+			"type": "CheckBox",
+			"name": "LastMessageTime",
+			"caption": "Last Message Time"
 		}
 	],
 	"actions": [],

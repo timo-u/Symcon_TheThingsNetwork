@@ -22,6 +22,7 @@ class TtnMqttDevice extends IPSModule
         $this->RegisterPropertyBoolean('ShowGatewayCount', false);
         $this->RegisterPropertyBoolean('ShowFrame', false);
         $this->RegisterPropertyBoolean('ShowInterval', false);
+		$this->RegisterPropertyBoolean('LastMessageTime', false);
 
         $this->RegisterAttributeInteger('LastMessageTimestamp', 0);
         $this->RegisterAttributeString('DownlinkUrl', '');
@@ -52,7 +53,9 @@ class TtnMqttDevice extends IPSModule
         $this->MaintainVariable('Meta_GatewayCount', $this->Translate('Gateway Count'), 1, '', 104, $this->ReadPropertyBoolean('ShowGatewayCount'));
         $this->MaintainVariable('State', $this->Translate('State'), 0, 'TTN_Online', 105, $this->ReadPropertyBoolean('ShowState'));
         $this->MaintainVariable('Interval', $this->Translate('Interval'), 1, 'TTN_second', 106, $this->ReadPropertyBoolean('ShowInterval'));
-    }
+		$this->MaintainVariable('LastMessageTime', $this->Translate('Last Message Time'), 3, '', 107, $this->ReadPropertyBoolean('LastMessageTime'));
+         
+ }
 
     public function WatchdogTimerElapsed()
     {
@@ -195,11 +198,23 @@ class TtnMqttDevice extends IPSModule
 		{
             if (property_exists($data->uplink_message, 'settings')) 
 			{
-                $this->SetValue('Meta_Informations', 'Freq: '.$data->uplink_message->settings->frequency/1000000 ." MHz".
-                ' BW: '.$data->uplink_message->settings->data_rate->lora->bandwidth/1000 ." kHz".
-				' Coding Rate: '.$data->uplink_message->settings->coding_rate.
-				' AirTime : ' . $data->uplink_message->consumed_airtime );
+				$infos = "";
+                if (property_exists($data->uplink_message->settings, 'frequency')) 
+					$infos .='Freq: '.$data->uplink_message->settings->frequency/1000000 ." MHz ";
 				
+				if (property_exists($data->uplink_message->settings, 'data_rate')
+					&& property_exists($data->uplink_message->settings, 'lora')
+					&& property_exists($data->uplink_message->settings->lora, 'bandwidth')) 
+					$infos .='BW: '.$data->uplink_message->settings->data_rate->lora->bandwidth/1000 ." kHz ";
+					
+				if (property_exists($data->uplink_message->settings, 'coding_rate')) 
+					$infos .='Coding Rate: '.$data->uplink_message->settings->coding_rate." ";
+				
+				if (property_exists($data->uplink_message, 'consumed_airtime')) 
+					$infos .='AirTime : ' . $data->uplink_message->consumed_airtime ." ";
+				
+				$this->SetValue('Meta_Informations',$infos); 
+				 
 				$this->SetValue('Meta_SpreadingFactor', $data->uplink_message->settings->data_rate->lora->spreading_factor);
             } 
 			else 
@@ -244,6 +259,36 @@ class TtnMqttDevice extends IPSModule
         }
 		// Timestamp der letzten Übertragung schreiben. 
         $this->WriteAttributeInteger('LastMessageTimestamp', $currentTimestamp);
+		
+		if ($this->ReadPropertyBoolean('LastMessageTime')) 
+		{
+            $this->SetValue('LastMessageTime', (new DateTime('NOW'))->format('Y-m-d H:i:s') );
+        }
+    }
+
+	
+	public function GetVariables()
+    {
+        $children = IPS_GetChildrenIDs($this->InstanceID);
+		$data = [];
+
+		foreach ($children as &$child) 
+		{
+			$variable = (IPS_GetObject($child));
+			if($variable['ObjectType']!=2)
+				continue;
+			if($variable['ObjectIdent']!="")
+				$name = $variable['ObjectIdent'];
+			else
+				$name = $variable['ObjectName'];
+
+            $data[$name] = (GetValue($child));
+            
+        }
+
+        $data['Timestamp'] = $this->ReadAttributeInteger('LastMessageTimestamp');
+
+        return $data;
     }
 
     public function Downlink(int $port, bool $confirmed, string $schedule, string $payload)
@@ -285,14 +330,14 @@ class TtnMqttDevice extends IPSModule
 
         $MQTTTopic = "v3/" .$this->ReadPropertyString('ApplicationId')."@" .$this->ReadPropertyString('Tenant').'/devices/'.$this->ReadPropertyString('DeviceId').'/down/push';
         $this->SendDebug('Downlink() Topic', $MQTTTopic, 0);
-        $result = $this->sendMQTT($MQTTTopic, $Payload);
+        $result = $this->SendMQTT($MQTTTopic, $Payload);
 
         $this->SendDebug('Downlink() Successfull', intval($result), 0);
 
         return $result;
     }
 
-    protected function sendMQTT($Topic, $Payload)
+    protected function SendMQTT($Topic, $Payload)
     {
         $resultServer = true;
         $resultClient = true;

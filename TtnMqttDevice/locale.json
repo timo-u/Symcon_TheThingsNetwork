@@ -24,7 +24,8 @@
 			"Spreading Factor": "Spreizfaktor",
 			"Gateway Count": "Gateway Anzahl",
 			"Auto Create Variables": "Variablen automatisch erstellen",
-			"Get Content From Raw-Payload": "Inhalt aus dem RAW-Payload entnehmen"
+			"Get Content From Raw-Payload": "Inhalt aus dem RAW-Payload entnehmen",
+			"Last Message Time": "Zeitpunkt der letzten Nachricht"
 		}
 	}
 }
