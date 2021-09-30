@@ -59,7 +59,9 @@ class TtnMqttDevice extends IPSModule
 
     public function WatchdogTimerElapsed()
     {
+		if ($this->ReadPropertyBoolean('ShowState')) {
         $this->SetValue('State', false);
+		}
         $this->SetTimerInterval('WatchdogTimer', 0);
     }
 
@@ -80,7 +82,13 @@ class TtnMqttDevice extends IPSModule
 
     public function GetState()
     {
+		if ($this->ReadPropertyBoolean('ShowState')) {
         return $this->GetValue('State');
+		}
+		else
+		{
+			return false; 
+		}
     }
 
     public function ReceiveData($JSONString)

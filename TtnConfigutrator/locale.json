@@ -1,0 +1,13 @@
+{
+  "translations": {
+    "de": {
+      "Error on create instance.": "Fehler beim erzeugen der Instanz.",
+      "Create instance": "Instanz erzeugen",
+      "DeviceID": "GeräteID",
+      "ApplicationID": "AnwendungsID",
+      "TTN MQTT Devices":"TTN MQTT Geräte",
+      "Tenant": "Tenant",
+      "InstanceID": "InstanzID"
+    }
+  }
+}

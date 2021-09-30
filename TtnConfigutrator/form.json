@@ -1,0 +1,38 @@
+{
+  "elements": [],
+  "actions": [
+    {
+      "type": "Configurator",
+      "name": "Configurator",
+      "caption": "TTN MQTT Devices",
+      "delete": false,
+      "sort": {
+        "column": "DeviceId",
+        "direction": "ascending"
+      },
+      "columns": [
+        {
+          "caption": "DeviceID",
+          "name": "DeviceId",
+          "width": "auto"
+        },
+        {
+          "caption": "ApplicationID",
+          "name": "ApplicationId",
+          "width": "250px"
+        },
+        {
+          "caption": "Tenant",
+          "name": "Tenant",
+          "width": "250px"
+        },
+        {
+          "caption": "Instanz",
+          "name": "Instanz",
+          "width": "250px"
+        }
+      ],
+      "values": []
+    }
+  ]
+}
