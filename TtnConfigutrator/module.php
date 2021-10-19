@@ -14,13 +14,13 @@ class TtnConfigurator extends IPSModule
     {
         //Apply filter
         parent::ApplyChanges();
-		// nach MQTT-Paketen im Format des TTI V3 Stack suchen 
+        // nach MQTT-Paketen im Format des TTI V3 Stack suchen
         $this->SetReceiveDataFilter('.*v3\/.*\/devices\/.*');
     }
 
     public function GetConfigurationForm()
     {
-		// Formular dynamisch anpassen
+        // Formular dynamisch anpassen
         $data = json_decode(file_get_contents(__DIR__ . '/form.json'));
         $TtnDevices = $this->getTtnDevices();
         if (count($TtnDevices) > 0) {
@@ -80,27 +80,25 @@ class TtnConfigurator extends IPSModule
             $this->SendDebug('ReceiveData()', "Topic hinzugefügt: ".  $topic, 0);
         }
     }
-	
-	private function getTtnDeviceIds()
-	{
-		// Geräte im Objektbaum suchen
-
-        $idsMQTTDevice = IPS_GetInstanceListByModuleID('{FF6D63B4-E6C1-C76C-5CDD-626847F3B3FA}');
-		return $idsMQTTDevice;
-		
-		// Für weitere Instanzen 
-		// $idsMQTTDevice = IPS_GetInstanceListByModuleID('{FF6D63B4-E6C1-C76C-5CDD-626847F3B3FA}');
-        //  $ids = array_merge($idsMQTTDevice, $idsMQTTDevice);
-		//return $ids;
-		
-	}
-	
+    
+    private function getTtnDeviceIds()
+    {
+        // Geräte im Objektbaum suchen und prüfen, ob diese am gleichen Splitter angeschlossen sind.
+        $idsMQTTDevices = [];
+        foreach (IPS_GetInstanceListByModuleID('{FF6D63B4-E6C1-C76C-5CDD-626847F3B3FA}') as $instanceID) {
+            if (IPS_GetInstance($instanceID)['ConnectionID'] === IPS_GetInstance($this->InstanceID)['ConnectionID']) {
+                array_push($idsMQTTDevices, $instanceID);
+            }
+        }
+        return $idsMQTTDevices;
+    }
+    
 
     private function searchTtnDevice($device)
     {
         $ids = $this->getTtnDeviceIds();
-		
-		//Geräte nach passenden Attributen durchsuchen und Geräte-ID zurückgeben
+        
+        //Geräte nach passenden Attributen durchsuchen und Geräte-ID zurückgeben
         foreach ($ids as $id) {
             if (IPS_GetProperty($id, 'Tenant') == $device['Tenant']
                 && IPS_GetProperty($id, 'ApplicationId') == $device['ApplicationId']
@@ -108,6 +106,7 @@ class TtnConfigurator extends IPSModule
                 return $id;
             }
         }
+
         return 0;
     }
 
@@ -115,17 +114,23 @@ class TtnConfigurator extends IPSModule
     {
         // Geräte anhand der Topics im Buffer erstellen
         $topics = json_decode($this->GetBuffer('Topics'));
-		
-		// Array initialisieren falls noch nicht vorhanden
+        
+        // Array initialisieren falls noch nicht vorhanden
         if ($topics == null) {
             $topics= array();
-            return array();
         }
         
         $ttnDevices = array();
 
+        // Bereits angelegte Geräte erstellen
+        foreach ($this->getTtnDeviceIds() as $deviceid) {
+            $device['Tenant'] = IPS_GetProperty($deviceid, 'Tenant') ;
+            $device['ApplicationId']=IPS_GetProperty($deviceid, 'ApplicationId');
+            $device['DeviceId'] =IPS_GetProperty($deviceid, 'DeviceId');
+            array_push($ttnDevices, $device);
+        }
 
-		// Geräteatribute aus Topic erstellen
+        // Geräteatribute aus Topic erstellen, sofern noch nicht in List
         foreach ($topics as $topic) {
             $elements = explode("/", $topic);
             $applicationrenant = explode("@", $elements[1]);
@@ -133,9 +138,11 @@ class TtnConfigurator extends IPSModule
             $device['Tenant'] = $applicationrenant[1] ;
             $device['ApplicationId']=$applicationrenant[0];
             $device['DeviceId'] =$elements[3];
-            array_push($ttnDevices, $device);
+
+            if (!in_array($device, $ttnDevices)) {
+                array_push($ttnDevices, $device);
+            }
         }
-		
-        return $ttnDevices;
+        return  $ttnDevices;
     }
 }

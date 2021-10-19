@@ -5,7 +5,7 @@
       "Create instance": "Instanz erzeugen",
       "DeviceID": "GeräteID",
       "ApplicationID": "AnwendungsID",
-      "TTN MQTT Devices":"TTN MQTT Geräte",
+      "TTN MQTT Devices": "TTN MQTT Geräte",
       "Tenant": "Tenant",
       "InstanceID": "InstanzID"
     }
