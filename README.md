@@ -1,11 +1,11 @@
 # Symcon_TheThingsNetwork
 
-Das Modul verbindet das The Things Network (https://www.thethingsnetwork.org/) mit IP-Symcon (https://www.symcon.de). Hierfür wird die HTTP-Integration genutzt. 
-Erstellt und getestet wurde das Modul mit der HTTP Integration (v2.6.0).
+Das Modul verbindet das The Things Network (https://www.thethingsnetwork.org/) mit IP-Symcon (https://www.symcon.de). 
+Diese Verbindung kann sowohl über die HTTP-Integration als auch über MQTT (empfohlen) erfolgen.
 
 ## Vorraussetzungen 
 * natürlich IP-Symcon
-	* Symcon ab V5.0
+	* Symcon ab V5.5
 		* IP-Symcon muss vom Internt über HTTP(S) erreichbar sein  
 		* Symcon Connect dienst 
    		* Aktive Subscription erforderlich
@@ -16,6 +16,10 @@ ODER
 
 
 ## Aktualisierungen 
+* 1.6
+	* Da der alte TTN-Stack abgeschaltet ist wurden alle "alten" Instanzen entfernt.
+	* Der TTN Configurator erstellt automatisch die "TTN-MQTT-Device"-Instanzen 
+	* TTN-Gateway arbeitet mit V3
 * 1.5 
 	* Anpassungen für Stack V3 
 	* Alle Module für den alten Stack V2 werden mit V2 gekennzechnet.
