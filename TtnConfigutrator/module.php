@@ -83,7 +83,8 @@ class TtnConfigurator extends IPSModule
     
     private function getTtnDeviceIds()
     {
-        // Geräte im Objektbaum suchen und prüfen, ob diese am gleichen Splitter angeschlossen sind.
+        //return IPS_GetInstanceListByModuleID('{FF6D63B4-E6C1-C76C-5CDD-626847F3B3FA}');
+        // Geräte im Objektbaum suchen und prüfen, ob diese am gleichen splitter angeschlossen sind. 
         $idsMQTTDevices = [];
         foreach (IPS_GetInstanceListByModuleID('{FF6D63B4-E6C1-C76C-5CDD-626847F3B3FA}') as $instanceID) {
             if (IPS_GetInstance($instanceID)['ConnectionID'] === IPS_GetInstance($this->InstanceID)['ConnectionID']) {
@@ -91,6 +92,7 @@ class TtnConfigurator extends IPSModule
             }
         }
         return $idsMQTTDevices;
+
     }
     
 
@@ -130,7 +132,7 @@ class TtnConfigurator extends IPSModule
             array_push($ttnDevices, $device);
         }
 
-        // Geräteatribute aus Topic erstellen, sofern noch nicht in List
+        // Geräteatribute aus Topic erstellen
         foreach ($topics as $topic) {
             $elements = explode("/", $topic);
             $applicationrenant = explode("@", $elements[1]);
@@ -139,10 +141,16 @@ class TtnConfigurator extends IPSModule
             $device['ApplicationId']=$applicationrenant[0];
             $device['DeviceId'] =$elements[3];
 
-            if (!in_array($device, $ttnDevices)) {
+            if (!in_array($device,$ttnDevices)){
                 array_push($ttnDevices, $device);
             }
+            else
+            {
+                $this->SendDebug('getTtnDevices()', "Gerät bereits in Liste: ".  $elements[3], 0);
+            }
+            
         }
+        
         return  $ttnDevices;
     }
 }
