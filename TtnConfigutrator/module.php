@@ -135,10 +135,19 @@ class TtnConfigurator extends IPSModule
         // Geräteatribute aus Topic erstellen
         foreach ($topics as $topic) {
             $elements = explode("/", $topic);
-            $applicationrenant = explode("@", $elements[1]);
-
-            $device['Tenant'] = $applicationrenant[1] ;
-            $device['ApplicationId']=$applicationrenant[0];
+			
+			if(strpos($elements[1], "@")!== false)
+			{
+				$applicationrenant = explode("@", $elements[1]);
+				$device['Tenant'] = $applicationrenant[1] ;
+				$device['ApplicationId']=$applicationrenant[0];
+			}
+			else
+			{
+				$device['Tenant'] = "";
+				$device['ApplicationId']=$elements[1];
+			}
+			
             $device['DeviceId'] =$elements[3];
 
             if (!in_array($device,$ttnDevices)){
