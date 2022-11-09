@@ -38,7 +38,15 @@ class TtnMqttDevice extends IPSModule
           $this->Maintain();
 
         //Setze Filter für ReceiveData
-        $MQTTTopic = "v3/" .$this->ReadPropertyString('ApplicationId')."@" .$this->ReadPropertyString('Tenant').'/devices/'.$this->ReadPropertyString('DeviceId').'/up';
+        if($this->ReadPropertyString('Tenant')=="") // Leerer Tennat bei Lokalem Stack
+		{
+			$MQTTTopic = "v3/" .$this->ReadPropertyString('ApplicationId').'/devices/'.$this->ReadPropertyString('DeviceId').'/up';
+		}
+		else		
+		{
+			$MQTTTopic = "v3/" .$this->ReadPropertyString('ApplicationId')."@" .$this->ReadPropertyString('Tenant').'/devices/'.$this->ReadPropertyString('DeviceId').'/up';
+		}
+		
         $this->SetReceiveDataFilter('.*'.$MQTTTopic.'.*');
     
     }
