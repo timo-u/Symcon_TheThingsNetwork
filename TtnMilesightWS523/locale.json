@@ -1,0 +1,42 @@
+{
+	"translations": {
+		"de": {
+			"Application ID": "Anwendungs ID",
+			"Device ID": "Geräte ID",
+			"Show Meta Informations": "Zeige Metainformationen",
+			"Show RSSI": "Zeige RSSI",
+			"Show SNR": "Zeige SNR",
+			"Show Frame Count": "Zeige Paket-Zähler",
+			"Show Gateway Count": "Zeige Anzahl der Gateways",
+			"Show Interval": "Zeige Intervall",
+			"Interval": "Intervall",
+			"State": "Status",
+			"minutes": "Minuten",
+			"online": "Online",
+			"offline": "Offline",
+			"Watchdog Time": "Watchdog Zeit",
+			"Show State": "Status anzeigen",
+			"Type": "Datentyp",
+			"Payload": "Daten",
+			"Meta Informations": "Metadaten",
+			"RSSI": "RSSI",
+			"SNR": "SNR",
+			"Spreading Factor": "Spreizfaktor",
+			"Gateway Count": "Gateway Anzahl",
+			"Auto Create Variables": "Variablen automatisch erstellen",
+			"Get Content From Raw-Payload": "Inhalt aus dem RAW-Payload entnehmen",
+			"Last Message Time": "Zeitpunkt der letzten Nachricht",
+			"Switchstate": "Schaltzustand",
+			"Outage": "Stromausfall",
+			"Current": "Strom",
+			"Power": "Leistung",
+			"Factor": "Leistungsfaktor",
+			"Voltage": "Spannung",
+			"Power Consumption": "Energieverbrauch",
+			"Show Outage": "Zeige Ausfall",
+			"Show Performance Parameters": "Zeige Leistungsparameter",
+			"Interval": "Intervall",
+			"Repetitions": "Wiederholungen"
+		}
+	}
+}

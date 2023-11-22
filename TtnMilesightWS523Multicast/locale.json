@@ -1,0 +1,10 @@
+{
+	"translations": {
+		"de": {
+			"Application ID": "Anwendungs ID",
+			"Device ID": "Geräte ID",
+			"Gateways for Broadcast": "Gateways für Broadcast",
+			"Description": "Beschreibung"
+		}
+	}
+}
