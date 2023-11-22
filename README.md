@@ -29,6 +29,10 @@ ODER
 	* Die V2 Instanzen bleiben in dem Modul, bis TTN V2 abgeschaltet wird. 
 	* Das HTTPIntegrationGateway ist für V2 und V3 nutzbar.
 	* TTN Gateway (Monitoring der Gateways) ist aktuell noch für den V2 Stack 
+* 2.0
+    * Refactoring des Moduls 
+    * Ausgliedern der Funktionen in eine Library um die Basisfunktionen aus den Instanzen auszugliedern 
+    * Implementierung der Milesight WS523 Schaltsteckdose
 
 ## TTN HTTP Integration Gateway
 Das Gateway (IO-Instanz) ist der Zentrale Empfänger in Symcon, in dem alle Nachrichten von TTN eingehen. 
