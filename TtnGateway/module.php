@@ -185,6 +185,27 @@ class TtnGateway extends IPSModule
         
         
     }
+	public function GetVariables()
+    {
+        $children = IPS_GetChildrenIDs($this->InstanceID);
+		$data = [];
+
+		foreach ($children as &$child) 
+		{
+			$variable = (IPS_GetObject($child));
+			if($variable['ObjectType']!=2)
+				continue;
+			if($variable['ObjectIdent']!="")
+				$name = $variable['ObjectIdent'];
+			else
+				$name = $variable['ObjectName'];
+
+            $data[$name] = (GetValue($child));
+            
+        }
+
+        return $data;
+    }
 	
 	private function MaintainVariables()
     {
