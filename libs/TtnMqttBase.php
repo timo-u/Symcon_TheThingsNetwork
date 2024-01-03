@@ -27,7 +27,6 @@ public function Create()
 		$this->RegisterPropertyBoolean('LastMessageTime', false);
 
         $this->RegisterAttributeInteger('LastMessageTimestamp', 0);
-        $this->RegisterAttributeString('DownlinkUrl', '');
 
         $this->RegisterTimer('WatchdogTimer', $this->ReadPropertyInteger('WatchdogTime') * 60000, 'TTN_WatchdogTimerElapsed($_IPS[\'TARGET\']);');
         $this->RegisterVariableProfiles();
