@@ -114,7 +114,7 @@ class TtnKlax2 extends IPSModule
 	public function UpdateMeasuringInterval()
 	{
 		$minutes = $this->ReadPropertyInteger('Interval');
-		$this->Downlink(100,false,"",$this->IntToHex($minutes,2,true));
+		$this->Downlink(100,false,"",$this->IntToHex($minutes,2,false));
 	}
 	
 	
