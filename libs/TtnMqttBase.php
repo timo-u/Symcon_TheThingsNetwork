@@ -129,8 +129,9 @@ private function MaintainBaseVaraibles()
                 if (property_exists($gateway, 'rssi')  && $rssi < $gateway->rssi) 
 				{
                     $rssi = $gateway->rssi;
+					$this->SendDebug('ReceiveData()', 'Gateway: '.$gateway->gateway_ids->gateway_id . " RSSI: " .$gateway->rssi, 0);
                 }
-			$this->SendDebug('ReceiveData()', 'Gateway: '.$gateway->gateway_ids->gateway_id . " RSSI: " .$gateway->rssi, 0);	
+				
             }
             $gatewayCount = count($gateways);
         }
