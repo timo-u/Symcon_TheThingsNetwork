@@ -36,7 +36,7 @@ class DntRadiatorThermostat extends IPSModule
         $this->RegisterAttributeString('DownlinkUrl', '');
 
         $this->RegisterTimer('WatchdogTimer', $this->ReadPropertyInteger('WatchdogTime') * 60000, 'TTN_WatchdogTimerElapsed($_IPS[\'TARGET\']);');
-        $this->RegisterVariableProfiles();
+        $this->RegisterBaseVariableProfiles(); //Aktuakisiert die Variablenprofile der eigenen und der Basisklasse
     }
 
     private function HandleReceivedData($data)
