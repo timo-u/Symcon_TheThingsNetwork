@@ -17,6 +17,11 @@
 		},
 		{
 			"type": "CheckBox",
+			"name": "ShowAdvancedOptions",
+			"caption": "Show advanced options"
+		},
+		{
+			"type": "CheckBox",
 			"name": "ShowState",
 			"caption": "Show State"
 		},
