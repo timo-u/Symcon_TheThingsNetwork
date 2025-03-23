@@ -211,9 +211,10 @@ class DntRadiatorThermostat extends IPSModule
 
         if ($Ident == 'set_point_temperature') {
             $this->DownlinkSetPointTemperature($Value);
+			$this->SetValue('set_point_temperature', $Value); // Setzt den Wert bis er über den nächsten Uplink überschrieben wird 
             return true;
         }
-
+ 
     }
 
     private function RegisterVariableProfiles()
