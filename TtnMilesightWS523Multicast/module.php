@@ -20,7 +20,7 @@ class TtnMilesightWS523Multicast extends IPSModule
 		$this->RegisterPropertyInteger('Repetitions', 1);
 		
 		$this->ConnectParent('{F7A0DD2E-7684-95C0-64C2-D2A9DC47577B}');
-        $this->RegisterVariableProfiles();
+        $this->RegisterBaseVariableProfiles();;
     }
 
 	public function ApplyChanges()

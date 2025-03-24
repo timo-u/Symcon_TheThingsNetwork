@@ -35,7 +35,7 @@ class TtnMilesightWS523 extends IPSModule
         $this->RegisterAttributeString('DownlinkUrl', '');
 
         $this->RegisterTimer('WatchdogTimer', $this->ReadPropertyInteger('WatchdogTime') * 60000, 'TTN_WatchdogTimerElapsed($_IPS[\'TARGET\']);');
-        $this->RegisterVariableProfiles();
+        $this->RegisterBaseVariableProfiles();
     }
 
 	private function HandleReceivedData($data)

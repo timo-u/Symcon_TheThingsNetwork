@@ -62,6 +62,7 @@ trait TtnMqttBase
         $this->MaintainVariable('LastMessageTime', $this->Translate('Last Message Time'), 3, '', 107, $this->ReadPropertyBoolean('LastMessageTime'));
         $this->Maintain();
     }
+    
     private function Maintain()
     {
         //für Vaiablen in den Modulen
@@ -99,7 +100,7 @@ trait TtnMqttBase
         // Zurücksetzen des WatchdogTimers bei Empfang einer Nachricht
         $this->WatchdogReset();
 
-        $this->SendDebug('ReceiveData()', 'Application_ID & Device_ID OK', 0);
+        $this->SendDebug(__FUNCTION__, 'Application_ID & Device_ID OK', 0);
 
         $this->HandleReceivedData($data);
 
@@ -121,15 +122,15 @@ trait TtnMqttBase
 
                 if (property_exists($gateway, 'rssi')  && $rssi < $gateway->rssi) {
                     $rssi = $gateway->rssi;
-                    $this->SendDebug('ReceiveData()', 'Gateway: '.$gateway->gateway_ids->gateway_id . " RSSI: " .$gateway->rssi, 0);
+                    $this->SendDebug(__FUNCTION__, 'Gateway: '.$gateway->gateway_ids->gateway_id . " RSSI: " .$gateway->rssi, 0);
                 }
 
             }
             $gatewayCount = count($gateways);
         }
 
-        $this->SendDebug('ReceiveData()', 'Best RSSI: '.$rssi, 0);
-        $this->SendDebug('ReceiveData()', 'Best SNR: '.$snr, 0);
+        $this->SendDebug(__FUNCTION__, 'Best RSSI: '.$rssi, 0);
+        $this->SendDebug(__FUNCTION__, 'Best SNR: '.$snr, 0);
 
 
         if ($this->ReadPropertyBoolean('ShowMeta')) {
@@ -169,7 +170,7 @@ trait TtnMqttBase
         }
         if ($this->ReadPropertyBoolean('ShowFrame')) {
             if (property_exists($data->uplink_message, 'f_cnt')) { // wenn FrameID==0 existiert dieses Feld nicht
-                $this->SendDebug('ReceiveData()', 'Frame Counter : '.$data->uplink_message->f_cnt, 0);
+                $this->SendDebug(__FUNCTION__, 'Frame Counter : '.$data->uplink_message->f_cnt, 0);
                 $this->SetValue('Meta_FrameId', $data->uplink_message->f_cnt);
             } else {
                 $this->SetValue('Meta_FrameId', 0);
@@ -201,17 +202,17 @@ trait TtnMqttBase
         // Payload-Elemente auslesen sofern vorhanden
         if (property_exists($data, 'uplink_message') && property_exists($data->uplink_message, 'decoded_payload')) {
             $elements = $data->uplink_message->decoded_payload;
-            $this->SendDebug('HandleReceivedData()', 'Payload: '.json_encode($elements), 0);
+            $this->SendDebug(__FUNCTION__, 'Payload: '.json_encode($elements), 0);
         } else {
             $elements = null;
-            $this->SendDebug('HandleReceivedData()', 'Key: uplink_message->decoded_payload does not exist', 0);
+            $this->SendDebug(__FUNCTION__, 'Key: uplink_message->decoded_payload does not exist', 0);
         }
 
         if ($elements == null) {
-            $this->SendDebug('HandleReceivedData()', 'JSON-Decode failed', 0);
+            $this->SendDebug(__FUNCTION__, 'JSON-Decode failed', 0);
         } else {
             foreach ($elements as $key => $value) {
-                $this->SendDebug('HandleReceivedData()', 'Key: '.$key.' Value: '.print_r($value, true).' Type: '.gettype($value), 0);
+                $this->SendDebug(__FUNCTION__, 'Key: '.$key.' Value: '.print_r($value, true).' Type: '.gettype($value), 0);
                 // Prüfung ob Variable nicht vorhannden
                 if (@$this->GetIDForIdent($key) == false) {
                     // Bei deaktiviertem AutoCreateVariable deiese Variable überspringen
@@ -266,23 +267,25 @@ trait TtnMqttBase
 
     public function Downlink(int $port, bool $confirmed, string $schedule, string $payload)
     {
-        $this->SendDebug('Downlink()', 'Downlink()', 0);
+        $this->SendDebug(__FUNCTION__, 'Downlink()', 0);
 
         if ($port < 0 || $port > 255) {
-            $this->SendDebug('Downlink()', 'Port must be between 0 and 255!', 0);
+            $this->SendDebug(__FUNCTION__, 'Port must be between 0 and 255!', 0);
 
             return false;
         }
 
         $schedule = strtolower($schedule);
-        if ($schedule != 'first' || $schedule != 'last') {
-            $schedule = 'replace';
+        if ($schedule == 'push') {
+            $method = "push";
+        } else {
+            $method = "replace";
         }
 
-        $this->SendDebug('Downlink() Payload', $payload, 0);
+        $this->SendDebug(__FUNCTION__, 'Payload: '. $payload, 0);
 
         if (!ctype_xdigit($payload) || (strlen($payload) % 2) != 0) {
-            $this->SendDebug('Downlink() Payload Exception', 'Payload is not a HEX-String', 0);
+            $this->SendDebug(__FUNCTION__, 'Payload Exception: Payload is not a HEX-String', 0);
 
             return false;
         }
@@ -299,40 +302,43 @@ trait TtnMqttBase
             'downlinks'      => array($downlinks)
         ];
         $Payload = json_encode($postPayloadArray);
-        $this->SendDebug('Downlink() Payload', $Payload, 0);
+        $this->SendDebug(__FUNCTION__, 'Payload: '. $Payload, 0);
 
-        $MQTTTopic = "v3/" .$this->ReadPropertyString('ApplicationId')."@" .$this->ReadPropertyString('Tenant').'/devices/'.$this->ReadPropertyString('DeviceId').'/down/push';
-        $this->SendDebug('Downlink() Topic', $MQTTTopic, 0);
+
+        $MQTTTopic = "v3/" .$this->ReadPropertyString('ApplicationId')."@" .$this->ReadPropertyString('Tenant').'/devices/'.$this->ReadPropertyString('DeviceId').'/down/'.$method;
+        $this->SendDebug(__FUNCTION__, 'Topic: '. $MQTTTopic, 0);
         $result = $this->SendMQTT($MQTTTopic, $Payload);
 
-        $this->SendDebug('Downlink() Successfull', intval($result), 0);
+        $this->SendDebug(__FUNCTION__, 'Successfull: '. intval($result), 0);
 
         return $result;
     }
     public function DownlinkMulticast(int $port, string $schedule, string $payload, string $gatewayids, int $interval, int $repetitions)
     {
-        $this->SendDebug('DownlinkMulticast()', 'DownlinkMulticast()', 0);
+        $this->SendDebug(__FUNCTION__, 'DownlinkMulticast()', 0);
 
         if ($port < 0 || $port > 255) {
-            $this->SendDebug('DownlinkMulticast()', 'Port must be between 0 and 255!', 0);
+            $this->SendDebug(__FUNCTION__, 'Port must be between 0 and 255!', 0);
 
             return false;
         }
         $gatewayids = explode(',', $gatewayids);
         if (count($gatewayids) == 0) {
-            $this->SendDebug('DownlinkMulticast()', 'For multicast, at least one gateway must be specified.', 0);
+            $this->SendDebug(__FUNCTION__, 'For multicast, at least one gateway must be specified.', 0);
             return false;
         }
 
         $schedule = strtolower($schedule);
-        if ($schedule != 'first' || $schedule != 'last') {
-            $schedule = 'replace';
+        if ($schedule == 'push') {
+            $method = "push";
+        } else {
+            $method = "replace";
         }
 
-        $this->SendDebug('DownlinkMulticast() Payload', $payload, 0);
+        $this->SendDebug(__FUNCTION__, 'Payload: '. $payload, 0);
 
         if (!ctype_xdigit($payload) || (strlen($payload) % 2) != 0) {
-            $this->SendDebug('DownlinkMulticast() Payload Exception', 'Payload is not a HEX-String', 0);
+            $this->SendDebug(__FUNCTION__, 'Payload Exception: Payload is not a HEX-String', 0);
 
             return false;
         }
@@ -342,7 +348,7 @@ trait TtnMqttBase
 
 
         for ($i = 1; $i <= $repetitions; $i++) {
-            $this->SendDebug('DownlinkMulticast()', $i. ". Durchlauf", 0);
+            $this->SendDebug(__FUNCTION__, $i. ". Durchlauf", 0);
 
             foreach ($gatewayids as &$gatewayid) {
                 $gatewayList = array();
@@ -370,18 +376,18 @@ trait TtnMqttBase
                     ];
 
                 $Payload = json_encode($postPayloadArray);
-                $this->SendDebug('DownlinkMulticast() Payload', $Payload, 0);
-                $this->SendDebug('DownlinkMulticast() Gateway', $gatewayid, 0);
+                $this->SendDebug(__FUNCTION__, 'Payload'. $Payload, 0);
+                $this->SendDebug(__FUNCTION__, 'Gateway: '. $gatewayid, 0);
 
 
-                $MQTTTopic = "v3/" .$this->ReadPropertyString('ApplicationId')."@" .$this->ReadPropertyString('Tenant').'/devices/'.$this->ReadPropertyString('DeviceId').'/down/push';
-                $this->SendDebug('DownlinkMulticast() Topic', $MQTTTopic, 0);
+                $MQTTTopic = "v3/" .$this->ReadPropertyString('ApplicationId')."@" .$this->ReadPropertyString('Tenant').'/devices/'.$this->ReadPropertyString('DeviceId').'/down/'.$method;
+                $this->SendDebug(__FUNCTION__, 'Topic: '. $MQTTTopic, 0);
                 $result = $this->SendMQTT($MQTTTopic, $Payload);
                 ips_sleep($interval * 1000); // zwischen den Aussendeungen der einzelnen Gateways Zeit lassen um überschneidungen der Pakete zu verhindern
             }
         }
 
-        $this->SendDebug('DownlinkMulticast() Successfull', intval($result), 0);
+        $this->SendDebug(__FUNCTION__, 'Successfull: '. intval($result), 0);
 
         return $result;
     }
@@ -397,7 +403,7 @@ trait TtnMqttBase
         $Server['Topic'] = $Topic;
         $Server['Payload'] = $Payload;
         $ServerJSON = json_encode($Server, JSON_UNESCAPED_SLASHES);
-        $this->SendDebug('Downlink()'.'MQTT Server', $ServerJSON, 0);
+        $this->SendDebug(__FUNCTION__, 'MQTT Server '. $ServerJSON, 0);
         $resultServer = @$this->SendDataToParent($ServerJSON);
 
         //MQTT Client
@@ -412,7 +418,7 @@ trait TtnMqttBase
         $Client['Buffer'] = $BufferJSON;
 
         $ClientJSON = json_encode($Client);
-        $this->SendDebug('Downlink()'.'MQTT Client', $ClientJSON, 0);
+        $this->SendDebug(__FUNCTION__, 'MQTT Client '. $ClientJSON, 0);
         $resultClient = @$this->SendDataToParent($ClientJSON);
 
         return $resultServer === false && $resultClient === false;
@@ -502,7 +508,7 @@ trait TtnMqttBase
     {
         $binary = dechex($value);
         if (strlen($binary) > $bytes * 2) {
-            $this->SendDebug('IntToHex', 'Der Wert '. $value ." ist größer als ".$bytes." Bytes", 0);
+            $this->SendDebug(__FUNCTION__, 'Der Wert '. $value ." ist größer als ".$bytes." Bytes", 0);
             return null;
         }
         $binary = str_pad($binary, $bytes * 2, "0", STR_PAD_LEFT);
