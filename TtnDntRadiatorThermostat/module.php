@@ -1,7 +1,5 @@
 <?php
-
 require_once(__DIR__.'/../libs/TtnMqttBase.php');
-
 
 class DntRadiatorThermostat extends IPSModule
 {
@@ -17,8 +15,6 @@ class DntRadiatorThermostat extends IPSModule
         $this->RegisterPropertyString('Tenant', 'ttn');
 
         $this->RegisterPropertyBoolean('ShowAdvancedOptions', false);
-
-
 
         $this->RegisterPropertyBoolean('ShowState', false);
         $this->RegisterPropertyInteger('WatchdogTime', 0);
@@ -55,26 +51,35 @@ class DntRadiatorThermostat extends IPSModule
         } else {
 
 
-
             if (property_exists($elements, 'battery_voltage')) {
+				$this->MaintainVariable('battery_voltage', $this->Translate('battery voltage'), 2, 'TTN_dnt_thermostat_battery', 10, true);
                 $this->SetValue('battery_voltage', $elements->battery_voltage->value / 1000);
             }
 
             if (property_exists($elements, 'heating_control')) {
                 if (property_exists($elements->heating_control, 'room_temperature')) {
+					$this->MaintainVariable('room_temperature', $this->Translate('room temperature'), 2, '~Temperature.Room', 1, true);
                     $this->SetValue('room_temperature', $elements->heating_control->room_temperature->value);
-                    //$this->SendDebug(__FUNCTION__, 'room_temperature: '.$elements->heating_control->room_temperature->value, 0);
-                }
+                   
+				}
                 if (property_exists($elements->heating_control, 'set_point_temperature')) {
+					$this->MaintainVariable('set_point_temperature', $this->Translate('set point temperature'), 2, '~Temperature.Room', 2, true);
+					$this->EnableAction("set_point_temperature");
                     $this->SetValue('set_point_temperature', $elements->heating_control->set_point_temperature->value);
-                    //$this->SendDebug(__FUNCTION__, 'set_point_temperature: '.$elements->heating_control->set_point_temperature->value, 0);
-                }
+                    
+				}
+				if (property_exists($elements->heating_control, 'valve_position')) {
+					$this->MaintainVariable('valve_position', $this->Translate('valve position'), 1, '~Intensity.100', 4, true);
+                    $this->SetValue('valve_position', $elements->heating_control->valve_position->value);
+                
+				}
                 if (property_exists($elements->heating_control, 'mode') && property_exists($elements->heating_control->mode, 'manu_temp') && property_exists($elements->heating_control->mode->manu_temp, 'value')) {
 
                     $this->SetValue('set_point_temperature', $elements->heating_control->mode->manu_temp->value);
                 }
                 if (property_exists($elements->heating_control, 'mode') && property_exists($elements->heating_control->mode, 'active_mode') && property_exists($elements->heating_control->mode->active_mode, 'value')) {
-                    switch ($elements->heating_control->mode->active_mode->value) {
+                    $this->MaintainVariable('thermostat_mode', $this->Translate('thermostat mode'), 1, 'TTN_dnt_thermostat_mode', 3, true);
+					switch ($elements->heating_control->mode->active_mode->value) {
                         case "Manu Temp":
                             $this->SetValue('thermostat_mode', 0);
                             break;
@@ -110,38 +115,15 @@ class DntRadiatorThermostat extends IPSModule
 
     }
 
-    private function Maintain()
-    {
-        $this->MaintainVariable('room_temperature', $this->Translate('room temperature'), 2, '~Temperature.Room', 1, true);
-        $this->MaintainVariable('set_point_temperature', $this->Translate('set point temperature'), 2, '~Temperature.Room', 2, true);
-        $this->MaintainVariable('thermostat_mode', $this->Translate('thermostat mode'), 1, 'TTN_dnt_thermostat_mode', 3, true);
-        $this->MaintainVariable('battery_voltage', $this->Translate('battery voltage'), 2, 'TTN_dnt_thermostat_battery', 10, true);
 
-        $this->EnableAction("set_point_temperature");
-
-        /*
-        $ShowAdvancedOptions = $this->ReadPropertyboolean('ShowAdvancedOptions');
-
-        $this->MaintainVariable('window_open_detection', $this->Translate('window open detection'), 0, '', 100, $ShowAdvancedOptions);
-        $this->MaintainVariable('holiday', $this->Translate('holiday'), 0, '', 101, $ShowAdvancedOptions);
-        $this->MaintainVariable('display_color_inversion', $this->Translate('display_color_inversion'), 0, '', 101, $ShowAdvancedOptions);
-        $this->MaintainVariable('display_legacy_temp_scale', $this->Translate('display_color_inversion'), 0, '', 101, $ShowAdvancedOptions);
-        $this->MaintainVariable('display_orientation', $this->Translate('display_color_inversion'), 0, '', 101, $ShowAdvancedOptions);
-        $this->MaintainVariable('display_color_inversion', $this->Translate('display_color_inversion'), 0, '', 101, $ShowAdvancedOptions);
-*/
-
-
-    }
-
-
-    public function DownlinkSetReportingInterval(int $seconds, bool $confirmed = false)
+    public function DownlinkSetReportingInterval(int $seconds)
     {
         $value = intval(($seconds - 30) / 30);
         if ($value < 0 || $value > 127) {
             $this->LogMessage("SetReportingInterval muss zwiscchen 30 und 3840 Sekunden liegen", KL_WARNING);
             return;
         }
-        $this->Downlink(10, $confirmed, "", $this->GetCommandByte("01", true) . $this->IntToHex($value, 1, true));
+        $this->Downlink(10, false, "", $this->GetCommandByte("01", true) . $this->IntToHex($value, 1, true));
     }
 
     public function DownlinkSetPointTemperature(float $temperature)
@@ -152,8 +134,6 @@ class DntRadiatorThermostat extends IPSModule
 
     public function DownlinkSetBoostConfig(int $duration, int $boostPosition)
     {
-
-
         $this->Downlink(
             10,
             false,
@@ -185,11 +165,33 @@ class DntRadiatorThermostat extends IPSModule
         $this->Downlink(10, false, "", $this->GetCommandByte("3C", false).$value);
     }
 
+    public function DownlinkSetStatusParameter(bool $SetPointTemperature = true,bool $RoomTemperature = true,bool $BaterryVoltage = true, bool $ValvePosition = true, bool $InputGain=false)
+    {
+        $commandValue = bindec("00000000");;   // LeeresByte
+        if ($SetPointTemperature) {                        
+            $commandValue += bindec("00100000");
+        }
+        if ($RoomTemperature) {                       
+            $commandValue += bindec("01000000");
+        }
+        if ($BaterryVoltage) {                     
+            $commandValue += bindec("10000000");
+        }
+        if ($ValvePosition) {                      
+            $commandValue += bindec("00010000");
+        }
+        if ($InputGain) {                      
+            $commandValue += bindec("00001100"); // i und p-Wert
+        }
+        $value =  str_pad(dechex($commandValue), 1 * 2, "0", STR_PAD_LEFT);
+
+        $this->Downlink(10, false, "", $this->GetCommandByte("03", false).$value);
+    }
+
     public function DownlinkGetAllConfig()
     {
         $this->Downlink(10, false, "", $this->GetCommandByte("7C", true));
     }
-
 
     private function GetCommandByte($commandId, $instantResponse = false)
     {
